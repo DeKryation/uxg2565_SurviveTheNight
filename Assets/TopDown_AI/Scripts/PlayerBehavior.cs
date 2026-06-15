@@ -54,19 +54,30 @@ public class PlayerBehavior : MonoBehaviour {
 		attackTimer.UpdateTimer ();
 		UpdateAim ();
 	}
-	public void DamagePlayer(){
-		animator.SetBool ("Dead", true);
-		animator.transform.parent = null;
-		this.enabled = false;
-		myRigidBody.isKinematic = true;
-		GameManager.RegisterPlayerDeath ();
-		gameObject.GetComponent<Collider> ().enabled = false;
-		GameCamera.ToggleShake (0.3f);
-		Vector3 pos = animator.transform.position;
-		pos.y = 0.2f;
-		animator.transform.position = pos;
-	}
-	void UpdateAim(){
+    public void DamagePlayer()
+    {
+        PlayerHealth health = GetComponent<PlayerHealth>();
+
+        if (health != null)
+        {
+            health.TakeDamage(1);
+            return;
+        }
+
+        DiePlayer();
+    }
+
+    public void DiePlayer()
+    {
+        animator.SetBool("Dead", true);
+        animator.transform.parent = null;
+        this.enabled = false;
+        myRigidBody.isKinematic = true;
+        GameManager.RegisterPlayerDeath();
+        gameObject.GetComponent<Collider>().enabled = false;
+        GameCamera.ToggleShake(0.3f);
+    }
+    void UpdateAim(){
 
 
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
@@ -77,26 +88,39 @@ public class PlayerBehavior : MonoBehaviour {
 		float angleInDegrees = Mathf.Atan2 (deltaY, deltaX) * 180 / Mathf.PI;
 		transform.eulerAngles = new Vector3 (0, -angleInDegrees, 0);
 	}
-	public void Attack(){
-		switch (currentWeapon) {
-			case PlayerWeaponType.KNIFE:							
-				Invoke ("DoHitTest",0.2f);				
-			break;
-			case PlayerWeaponType.PISTOL:
-			GameCamera.ToggleShake (0.1f);
-				GameObject bullet=GameObject.Instantiate(proyectilePrefab, gunPivot.position,gunPivot.rotation) as GameObject;
-				bullet.transform.LookAt(mousePointer.transform);
-				bullet.transform.Rotate(0,Random.Range(-7.5f,7.5f),0);
-				AlertEnemies();
-			break;
-		}
-		animator.SetBool ("Attack", true);
-		CancelInvoke ("AttackOver");
-		Invoke ("AttackOver", attackTime);
-		attackTimer.StartTimer (attackTime);
+    public void Attack()
+    {
+        switch (currentWeapon)
+        {
+            case PlayerWeaponType.KNIFE:
+                Invoke("DoHitTest", 0.2f);
+                break;
 
-	}
-	void AlertEnemies(){
+            case PlayerWeaponType.PISTOL:
+                PistolAmmo pistolAmmo = GetComponent<PistolAmmo>();
+
+                if (pistolAmmo != null)
+                {
+                    if (!pistolAmmo.TryUseBullet())
+                    {
+                        return;
+                    }
+                }
+
+                GameCamera.ToggleShake(0.1f);
+                GameObject bullet = GameObject.Instantiate(proyectilePrefab, gunPivot.position, gunPivot.rotation) as GameObject;
+                bullet.transform.LookAt(mousePointer.transform);
+                bullet.transform.Rotate(0, Random.Range(-7.5f, 7.5f), 0);
+                AlertEnemies();
+                break;
+        }
+
+        animator.SetBool("Attack", true);
+        CancelInvoke("AttackOver");
+        Invoke("AttackOver", attackTime);
+        attackTimer.StartTimer(attackTime);
+    }
+    void AlertEnemies(){
 		RaycastHit[] hits=Physics.SphereCastAll (hitTestPivot.position,20.0f, hitTestPivot.up);
 		foreach (RaycastHit hit in hits) {
 			if (hit.collider != null && hit.collider.tag == "Enemy") {
