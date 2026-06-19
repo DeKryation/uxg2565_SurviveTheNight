@@ -37,6 +37,8 @@ public class PlayerHealth : MonoBehaviour
         currentHealth -= damageAmount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
+        SoundManager.PlayPlayerHit();
+
         UpdateHealthUI();
 
         if (currentHealth <= 0)

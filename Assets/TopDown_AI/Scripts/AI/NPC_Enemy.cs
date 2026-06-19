@@ -265,8 +265,10 @@ public class NPC_Enemy : MonoBehaviour {
 	void AttackAction(){
 		switch (weaponType) {
 			case NPC_WeaponType.KNIFE:
-			RaycastHit[] hits=Physics.SphereCastAll (weaponPivot.position,2.0f, weaponPivot.forward);
-			foreach(RaycastHit hit in hits){
+				RaycastHit[] hits = Physics.SphereCastAll(weaponPivot.position, 2.0f, weaponPivot.forward);
+				SoundManager.PlayPlayerKnife();
+
+                foreach (RaycastHit hit in hits){
 				if (hit.collider!=null && hit.collider.tag == "Player") {
 					hit.collider.GetComponent<PlayerBehavior>().DamagePlayer();
 				}
@@ -274,14 +276,17 @@ public class NPC_Enemy : MonoBehaviour {
 			break;
 			case NPC_WeaponType.RIFLE:
 				GameObject bullet=GameObject.Instantiate(proyectilePrefab, weaponPivot.position,weaponPivot.rotation) as GameObject;
-				bullet.transform.Rotate(0,Random.Range(-7.5f,7.5f),0);
-			break;
+				bullet.transform.Rotate(0, Random.Range(-7.5f, 7.5f), 0);
+				SoundManager.PlayEnemyGunshot();
+
+                break;
 			case NPC_WeaponType.SHOTGUN:
 				for(int i=0;i<5;i++){
 					GameObject birdshot=GameObject.Instantiate(proyectilePrefab, weaponPivot.position,weaponPivot.rotation) as GameObject;
-					birdshot.transform.Rotate(0,Random.Range(-15,15),0);
-				}
-			break;
+					birdshot.transform.Rotate(0, Random.Range(-15, 15), 0);
+                    SoundManager.PlayEnemyGunshot();
+                }
+				break;
 		}
 	}
 	////////////////////////// MISC FUNCTIONS //////////////////////////
@@ -333,8 +338,9 @@ public class NPC_Enemy : MonoBehaviour {
 		Vector3 pos = npcAnimator.transform.position;
 		pos.y = 0.2f;
 		npcAnimator.transform.position = pos;
-		GameManager.RemoveEnemy ();		
-		Destroy (gameObject);
+		GameManager.RemoveEnemy();
+		SoundManager.PlayEnemyDeath();
+        Destroy(gameObject);
 	}
 
 }

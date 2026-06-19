@@ -12,6 +12,10 @@ public class PistolAmmo : MonoBehaviour
     [Header("UI")]
     public TMP_Text ammoText;
 
+    [Header("Text Sizes")]
+    public int ammoTextSize = 36;
+    public int reloadingTextSize = 22;
+
     private bool isReloading = false;
 
     void Start()
@@ -49,6 +53,7 @@ public class PistolAmmo : MonoBehaviour
     {
         if (!isReloading)
             StartCoroutine(ReloadRoutine());
+        SoundManager.PlayReload();
     }
 
     IEnumerator ReloadRoutine()
@@ -61,6 +66,7 @@ public class PistolAmmo : MonoBehaviour
         currentAmmo = magazineSize;
         isReloading = false;
         UpdateAmmoUI();
+        SoundManager.PlayReload();
     }
 
     void UpdateAmmoUI()
@@ -70,11 +76,11 @@ public class PistolAmmo : MonoBehaviour
 
         if (isReloading)
         {
-            ammoText.text = "Reloading...";
+            ammoText.text = "<size=" + reloadingTextSize + ">Reloading</size>";
         }
         else
         {
-            ammoText.text = currentAmmo + " / " + magazineSize;
+            ammoText.text = "<size=" + ammoTextSize + ">" + currentAmmo + " / " + magazineSize + "</size>";
         }
     }
 }

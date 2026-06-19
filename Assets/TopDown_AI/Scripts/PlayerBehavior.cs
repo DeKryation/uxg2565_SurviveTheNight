@@ -69,6 +69,7 @@ public class PlayerBehavior : MonoBehaviour {
 
     public void DiePlayer()
     {
+        SoundManager.PlayPlayerDeath();
         animator.SetBool("Dead", true);
         animator.transform.parent = null;
         this.enabled = false;
@@ -91,21 +92,23 @@ public class PlayerBehavior : MonoBehaviour {
     public void Attack()
     {
         switch (currentWeapon)
-        {
-            case PlayerWeaponType.KNIFE:
+		{
+			case PlayerWeaponType.KNIFE:
+                SoundManager.PlayPlayerKnife();
                 Invoke("DoHitTest", 0.2f);
                 break;
 
             case PlayerWeaponType.PISTOL:
                 PistolAmmo pistolAmmo = GetComponent<PistolAmmo>();
 
-                if (pistolAmmo != null)
-                {
-                    if (!pistolAmmo.TryUseBullet())
-                    {
-                        return;
-                    }
-                }
+				if (pistolAmmo != null)
+				{
+					if (!pistolAmmo.TryUseBullet())
+					{
+						return;
+					}
+				}
+                SoundManager.PlayPlayerShoot();
 
                 GameCamera.ToggleShake(0.1f);
                 GameObject bullet = GameObject.Instantiate(proyectilePrefab, gunPivot.position, gunPivot.rotation) as GameObject;

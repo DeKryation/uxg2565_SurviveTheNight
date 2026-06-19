@@ -10,8 +10,11 @@ public class ExplosiveInventory : MonoBehaviour
     [Header("UI")]
     public TMP_Text explosiveText;
 
+    private static int savedExplosivesCollected = 0;
+
     void Start()
     {
+        explosivesCollected = savedExplosivesCollected;
         UpdateExplosiveUI();
     }
 
@@ -19,6 +22,8 @@ public class ExplosiveInventory : MonoBehaviour
     {
         explosivesCollected += amount;
         explosivesCollected = Mathf.Clamp(explosivesCollected, 0, explosivesNeeded);
+
+        savedExplosivesCollected = explosivesCollected;
 
         UpdateExplosiveUI();
     }
@@ -28,11 +33,16 @@ public class ExplosiveInventory : MonoBehaviour
         return explosivesCollected >= explosivesNeeded;
     }
 
+    public static void ResetSavedExplosives()
+    {
+        savedExplosivesCollected = 0;
+    }
+
     void UpdateExplosiveUI()
     {
         if (explosiveText != null)
         {
-            explosiveText.text = explosivesCollected + " / " + explosivesNeeded + " Explosives Collected";
+            explosiveText.text = explosivesCollected + " / " + explosivesNeeded + "\nCollected";
         }
     }
 }
