@@ -6,6 +6,9 @@ public class PauseMenu : MonoBehaviour
     [Header("Pause Menu UI")]
     [SerializeField] private GameObject pauseScreen;
 
+    [Header("Settings UI")]
+    [SerializeField] private GameObject settingsScreen;
+
     [Header("Mouse / Player Control")]
     [Tooltip("Drag the script that controls mouse aiming, player movement, or camera movement here.")]
     [SerializeField] private MonoBehaviour mouseControlScript;
@@ -26,6 +29,11 @@ public class PauseMenu : MonoBehaviour
             pauseScreen.SetActive(false);
         }
 
+        if (settingsScreen != null)
+        {
+            settingsScreen.SetActive(false);
+        }
+
         if (mouseControlScript != null)
         {
             mouseControlScript.enabled = true;
@@ -36,7 +44,14 @@ public class PauseMenu : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            TogglePause();
+            if (settingsScreen != null && settingsScreen.activeSelf)
+            {
+                CloseSettings();
+            }
+            else
+            {
+                TogglePause();
+            }
         }
     }
 
@@ -64,6 +79,11 @@ public class PauseMenu : MonoBehaviour
         if (pauseScreen != null)
         {
             pauseScreen.SetActive(true);
+        }
+
+        if (settingsScreen != null)
+        {
+            settingsScreen.SetActive(false);
         }
 
         // Stops the character, weapon, or camera from reacting
@@ -98,9 +118,45 @@ public class PauseMenu : MonoBehaviour
             pauseScreen.SetActive(false);
         }
 
+        if (settingsScreen != null)
+        {
+            settingsScreen.SetActive(false);
+        }
+
         // Keep this for a top-down game that uses the mouse cursor.
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void OpenSettings()
+    {
+        if (!isPaused)
+        {
+            PauseGame();
+        }
+
+        if (pauseScreen != null)
+        {
+            pauseScreen.SetActive(false);
+        }
+
+        if (settingsScreen != null)
+        {
+            settingsScreen.SetActive(true);
+        }
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsScreen != null)
+        {
+            settingsScreen.SetActive(false);
+        }
+
+        if (pauseScreen != null)
+        {
+            pauseScreen.SetActive(true);
+        }
     }
 
     public void RestartLevel()
