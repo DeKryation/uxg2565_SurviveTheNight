@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SoundManager : MonoBehaviour
 {
@@ -9,7 +10,9 @@ public class SoundManager : MonoBehaviour
     public AudioSource sfxSource;
 
     [Header("Music")]
+    public AudioClip mainMenuMusic;
     public AudioClip levelMusic;
+    public string mainMenuSceneName = "MainMenu";
 
     [Header("SFX Clips")]
     public AudioClip playerShootSFX;
@@ -21,6 +24,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip reloadSFX;
     public AudioClip buttonClickSFX;
     public AudioClip enemyGunshotSFX;
+    public AudioClip buttonHoverSFX;
 
     [Header("Overall Volume")]
     [Range(0f, 1f)] public float masterVolume = 1f;
@@ -37,6 +41,7 @@ public class SoundManager : MonoBehaviour
     [Range(0f, 1f)] public float reloadVolume = 1f;
     [Range(0f, 1f)] public float buttonClickVolume = 1f;
     [Range(0f, 1f)] public float enemyGunshotVolume = 1f;
+    [Range(0f, 1f)] public float buttonHoverVolume = 1f;
 
     void Awake()
     {
@@ -50,11 +55,34 @@ public class SoundManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         SetupAudioSources();
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void Start()
     {
-        if (levelMusic != null)
+        PlayMusicForCurrentScene();
+    }
+
+    void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        PlayMusicForCurrentScene();
+    }
+
+    void PlayMusicForCurrentScene()
+    {
+        string currentSceneName = SceneManager.GetActiveScene().name;
+
+        if (currentSceneName == mainMenuSceneName)
+        {
+            PlayMusic(mainMenuMusic);
+        }
+        else
         {
             PlayMusic(levelMusic);
         }
@@ -211,5 +239,10 @@ public class SoundManager : MonoBehaviour
     {
         if (Instance != null)
             Instance.PlaySFX(Instance.buttonClickSFX, Instance.buttonClickVolume);
+    }
+    public static void PlayButtonHover()
+    {
+        if (Instance != null)
+            Instance.PlaySFX(Instance.buttonHoverSFX, Instance.buttonHoverVolume);
     }
 }
