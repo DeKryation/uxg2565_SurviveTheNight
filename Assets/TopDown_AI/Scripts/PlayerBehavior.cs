@@ -10,9 +10,10 @@ public class PlayerBehavior : MonoBehaviour {
 	int hashSpeed;
 	float attackTime=0.4f;
 	 PlayerWeaponType currentWeapon=PlayerWeaponType.NULL;
-	Misc_Timer attackTimer= new Misc_Timer();
-	// Use this for initialization
-	void Awake() {
+	Misc_Timer attackTimer = new Misc_Timer();
+    public MuzzleFlashLight muzzleFlash;
+    // Use this for initialization
+    void Awake() {
 
 	}
 	void Start () {
@@ -108,7 +109,12 @@ public class PlayerBehavior : MonoBehaviour {
 						return;
 					}
 				}
-                SoundManager.PlayPlayerShoot();
+				SoundManager.PlayPlayerShoot();
+
+                if (muzzleFlash != null)
+                {
+                    muzzleFlash.Flash();
+                }
 
                 GameCamera.ToggleShake(0.1f);
                 GameObject bullet = GameObject.Instantiate(proyectilePrefab, gunPivot.position, gunPivot.rotation) as GameObject;
