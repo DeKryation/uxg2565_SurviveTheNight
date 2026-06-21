@@ -14,6 +14,10 @@ public class PlayerHealth : MonoBehaviour
     [Header("Damage Protection")]
     public float invincibleTimeAfterHit = 0.35f;
 
+    [Header("Low Health Screen Effect")]
+    public GameObject lowHealthOverlay;
+    public int lowHealthThreshold = 1;
+
     private float nextTimeCanTakeDamage = 0f;
     private bool isDead = false;
     private PlayerBehavior playerBehavior;
@@ -26,6 +30,13 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
+        currentHealth = maxHealth;
+
+        if (lowHealthOverlay != null)
+        {
+            lowHealthOverlay.SetActive(false);
+        }
+
         UpdateHealthUI();
     }
 
@@ -89,6 +100,11 @@ public class PlayerHealth : MonoBehaviour
         if (healthFillImage != null)
         {
             healthFillImage.fillAmount = maxHealth <= 0 ? 0 : (float)currentHealth / maxHealth;
+        }
+
+        if (lowHealthOverlay != null)
+        {
+            lowHealthOverlay.SetActive(currentHealth <= lowHealthThreshold);
         }
     }
 }
