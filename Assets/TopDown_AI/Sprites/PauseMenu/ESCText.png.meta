@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: 6047e1c7fc047c84d91a1de110130702
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2771226275712252243
+    second: ESCText_0
+  - first:
+      213: -4364998104207697757
+    second: ESCText_1
+  - first:
+      213: -2730496147342151365
+    second: ESCText_2
+  - first:
+      213: 6867535745604424010
+    second: ESCText_3
+  - first:
+      213: 3642070471117507400
+    second: ESCText_4
+  - first:
+      213: 8285624507527789085
+    second: ESCText_5
+  - first:
+      213: -2416143945513932186
+    second: ESCText_6
+  - first:
+      213: -9054198360189350859
+    second: ESCText_7
+  - first:
+      213: 1467284838894583835
+    second: ESCText_8
+  - first:
+      213: -284841371264317881
+    second: ESCText_9
+  - first:
+      213: -8213685667134528029
+    second: ESCText_10
+  - first:
+      213: -8975618759738986846
+    second: ESCText_11
+  - first:
+      213: -4667788437072717597
+    second: ESCText_12
+  - first:
+      213: 6386004085768383452
+    second: ESCText_13
+  - first:
+      213: 3859351066892545460
+    second: ESCText_14
+  - first:
+      213: 2141242879844162511
+    second: ESCText_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ESCText_0
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 35
+        width: 116
+        height: 221
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 359be0c7d9f557620800000000000000
+      internalID: 2771226275712252243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_1
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 32
+        width: 96
+        height: 182
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a85279d9596c63c0800000000000000
+      internalID: -4364998104207697757
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_2
+      rect:
+        serializedVersion: 2
+        x: 383
+        y: 35
+        width: 77
+        height: 179
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b31391588345b1ad0800000000000000
+      internalID: -2730496147342151365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_3
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 33
+        width: 92
+        height: 182
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a419c07ff536e4f50800000000000000
+      internalID: 6867535745604424010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_4
+      rect:
+        serializedVersion: 2
+        x: 567
+        y: 34
+        width: 92
+        height: 181
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84b06e50ccb3b8230800000000000000
+      internalID: 3642070471117507400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_5
+      rect:
+        serializedVersion: 2
+        x: 729
+        y: 35
+        width: 100
+        height: 221
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1af67927937cf270800000000000000
+      internalID: 8285624507527789085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_6
+      rect:
+        serializedVersion: 2
+        x: 838
+        y: 33
+        width: 112
+        height: 225
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66a6e6102e1287ed0800000000000000
+      internalID: -2416143945513932186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_7
+      rect:
+        serializedVersion: 2
+        x: 962
+        y: 33
+        width: 112
+        height: 225
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53c4df60096095280800000000000000
+      internalID: -9054198360189350859
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_8
+      rect:
+        serializedVersion: 2
+        x: 1134
+        y: 35
+        width: 90
+        height: 179
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b10c0a679c7dc5410800000000000000
+      internalID: 1467284838894583835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_9
+      rect:
+        serializedVersion: 2
+        x: 1227
+        y: 33
+        width: 95
+        height: 182
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7468470384a0c0cf0800000000000000
+      internalID: -284841371264317881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_10
+      rect:
+        serializedVersion: 2
+        x: 1397
+        y: 35
+        width: 120
+        height: 221
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e5aab95760230e80800000000000000
+      internalID: -8213685667134528029
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_11
+      rect:
+        serializedVersion: 2
+        x: 1519
+        y: 35
+        width: 83
+        height: 179
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2aeec6afa42307380800000000000000
+      internalID: -8975618759738986846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_12
+      rect:
+        serializedVersion: 2
+        x: 1608
+        y: 33
+        width: 91
+        height: 182
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e8da91c52fa83fb0800000000000000
+      internalID: -4667788437072717597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_13
+      rect:
+        serializedVersion: 2
+        x: 1707
+        y: 33
+        width: 93
+        height: 181
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdbea6aa1e4af9850800000000000000
+      internalID: 6386004085768383452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_14
+      rect:
+        serializedVersion: 2
+        x: 1808
+        y: 30
+        width: 130
+        height: 184
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4bda7adf85b2f8530800000000000000
+      internalID: 3859351066892545460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ESCText_15
+      rect:
+        serializedVersion: 2
+        x: 1946
+        y: 31
+        width: 81
+        height: 183
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcb12feed0937bd10800000000000000
+      internalID: 2141242879844162511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ESCText_0: 2771226275712252243
+      ESCText_1: -4364998104207697757
+      ESCText_10: -8213685667134528029
+      ESCText_11: -8975618759738986846
+      ESCText_12: -4667788437072717597
+      ESCText_13: 6386004085768383452
+      ESCText_14: 3859351066892545460
+      ESCText_15: 2141242879844162511
+      ESCText_2: -2730496147342151365
+      ESCText_3: 6867535745604424010
+      ESCText_4: 3642070471117507400
+      ESCText_5: 8285624507527789085
+      ESCText_6: -2416143945513932186
+      ESCText_7: -9054198360189350859
+      ESCText_8: 1467284838894583835
+      ESCText_9: -284841371264317881
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
