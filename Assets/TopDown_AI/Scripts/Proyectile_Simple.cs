@@ -14,6 +14,10 @@ public class Proyectile_Simple : MonoBehaviour
     [Tooltip("Use a small spherecast so fast bullets do not slip through thin walls.")]
     public float bulletRadius = 0.08f;
 
+    [Header("Impact VFX")]
+    public GameObject bulletImpactPrefab;
+    public float impactOffset = 0.05f;
+
     bool destroyed = false;
 
     void Start()
@@ -59,6 +63,7 @@ public class Proyectile_Simple : MonoBehaviour
         if (didHit)
         {
             transform.position = hit.point;
+            SpawnImpactEffect(hit.point, hit.normal);
             HandleHit(hit.collider);
             return;
         }
@@ -69,12 +74,27 @@ public class Proyectile_Simple : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (destroyed) return;
+
+        if (collision.contacts.Length > 0)
+        {
+            ContactPoint contact = collision.contacts[0];
+            SpawnImpactEffect(contact.point, contact.normal);
+        }
+        else
+        {
+            SpawnImpactEffect(transform.position, -transform.forward);
+        }
+
         HandleHit(collision.collider);
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (destroyed) return;
+
+        // Triggers do not give contact points, so use the bullet position.
+        SpawnImpactEffect(transform.position, -transform.forward);
+
         HandleHit(other);
     }
 
@@ -116,11 +136,23 @@ public class Proyectile_Simple : MonoBehaviour
         DestroyProyectile();
     }
 
+    void SpawnImpactEffect(Vector3 hitPoint, Vector3 hitNormal)
+    {
+        if (bulletImpactPrefab == null)
+            return;
+
+        Vector3 spawnPosition = hitPoint + hitNormal * impactOffset;
+        Quaternion spawnRotation = Quaternion.LookRotation(hitNormal);
+
+        Instantiate(bulletImpactPrefab, spawnPosition, spawnRotation);
+    }
+
     void DestroyProyectile()
     {
         destroyed = true;
         Destroy(gameObject);
     }
 }
+
 
 
