@@ -64,6 +64,7 @@ public class ExplosiveDoor : MonoBehaviour
     void OpenDoor()
     {
         opened = true;
+        RunTimer.StopTimer();
 
         if (loadNextSceneWhenOpened)
         {
