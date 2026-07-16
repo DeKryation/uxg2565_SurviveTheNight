@@ -26,8 +26,19 @@ public class PlayerBehavior : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		animator.SetFloat (hashSpeed, myRigidBody.linearVelocity .magnitude);
+	void Update () 
+	{
+        bool isMoving = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f || Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f;
+
+        if (isMoving)
+        {
+            SoundManager.StartFootsteps();
+        }
+        else
+        {
+            SoundManager.StopFootsteps();
+        }
+        animator.SetFloat (hashSpeed, myRigidBody.linearVelocity .magnitude);
 		float inputHorizontal = Input.GetAxis ("Horizontal");
 		float inputVertical = Input.GetAxis ("Vertical");
 	//	float speedY = inputVertical > 0.1 ? Mathf.Clamp ((inputVertical * moveSpeed), moveSpeed / 2.0f, moveSpeed) : 0.0f;

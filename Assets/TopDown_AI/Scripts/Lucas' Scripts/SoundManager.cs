@@ -8,6 +8,7 @@ public class SoundManager : MonoBehaviour
     [Header("Audio Sources")]
     public AudioSource musicSource;
     public AudioSource sfxSource;
+    public AudioSource footstepSource;
 
     [Header("Music")]
     public AudioClip mainMenuMusic;
@@ -25,6 +26,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip buttonClickSFX;
     public AudioClip enemyGunshotSFX;
     public AudioClip buttonHoverSFX;
+    public AudioClip footstepSFX;
 
     [Header("Overall Volume")]
     [Range(0f, 1f)] public float masterVolume = 1f;
@@ -42,6 +44,7 @@ public class SoundManager : MonoBehaviour
     [Range(0f, 1f)] public float buttonClickVolume = 1f;
     [Range(0f, 1f)] public float enemyGunshotVolume = 1f;
     [Range(0f, 1f)] public float buttonHoverVolume = 1f;
+    [Range(0f, 1f)] public float footstepVolume = 1f;
 
     void Awake()
     {
@@ -104,11 +107,21 @@ public class SoundManager : MonoBehaviour
             sfxSource = sfxObject.AddComponent<AudioSource>();
         }
 
+        if (footstepSource == null)
+        {
+            GameObject footstepObject = new GameObject("Footstep Source");
+            footstepObject.transform.SetParent(transform);
+            footstepSource = footstepObject.AddComponent<AudioSource>();
+        }
+
         musicSource.loop = true;
         musicSource.playOnAwake = false;
 
         sfxSource.loop = false;
         sfxSource.playOnAwake = false;
+
+        footstepSource.loop = true;
+        footstepSource.playOnAwake = false;
 
         ApplyVolume();
     }
@@ -167,6 +180,9 @@ public class SoundManager : MonoBehaviour
 
         if (sfxSource != null)
             sfxSource.volume = masterVolume * sfxVolume;
+
+        if (footstepSource != null)
+            footstepSource.volume = masterVolume * sfxVolume * footstepVolume;
     }
 
     public void SetMasterVolume(float value)
@@ -244,5 +260,29 @@ public class SoundManager : MonoBehaviour
     {
         if (Instance != null)
             Instance.PlaySFX(Instance.buttonHoverSFX, Instance.buttonHoverVolume);
+    }
+    public static void StartFootsteps()
+    {
+        if (Instance == null) return;
+        if (Instance.footstepSFX == null) return;
+        if (Instance.footstepSource == null) return;
+
+        if (!Instance.footstepSource.isPlaying)
+        {
+            Instance.footstepSource.clip = Instance.footstepSFX;
+            Instance.footstepSource.loop = true;
+            Instance.footstepSource.volume = Instance.masterVolume * Instance.sfxVolume * Instance.footstepVolume;
+            Instance.footstepSource.Play();
+        }
+    }
+    public static void StopFootsteps()
+    {
+        if (Instance == null) return;
+        if (Instance.footstepSource == null) return;
+
+        if (Instance.footstepSource.isPlaying)
+        {
+            Instance.footstepSource.Stop();
+        }
     }
 }
