@@ -28,6 +28,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip buttonHoverSFX;
     public AudioClip footstepSFX;
     public AudioClip sceneTransitionSFX;
+    public AudioClip[] enemyDeathSFXVariations;
 
     [Header("Overall Volume")]
     [Range(0f, 1f)] public float masterVolume = 1f;
@@ -231,8 +232,24 @@ public class SoundManager : MonoBehaviour
 
     public static void PlayEnemyDeath()
     {
-        if (Instance != null)
-            Instance.PlaySFX(Instance.enemyDeathSFX, Instance.enemyDeathVolume);
+        if (Instance == null)
+            return;
+
+        // Always play the default enemy death sound.
+        Instance.PlaySFX(Instance.enemyDeathSFX, Instance.enemyDeathVolume);
+
+        // Also play 1 random optional variation, if any are assigned.
+        if (Instance.enemyDeathSFXVariations != null && Instance.enemyDeathSFXVariations.Length > 0)
+        {
+            AudioClip chosenVariation = Instance.enemyDeathSFXVariations[
+                Random.Range(0, Instance.enemyDeathSFXVariations.Length)
+            ];
+
+            if (chosenVariation != null)
+            {
+                Instance.PlaySFX(chosenVariation, Instance.enemyDeathVolume);
+            }
+        }
     }
 
     public static void PlayPickupExplosive()
