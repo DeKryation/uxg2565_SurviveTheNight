@@ -27,6 +27,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip enemyGunshotSFX;
     public AudioClip buttonHoverSFX;
     public AudioClip footstepSFX;
+    public AudioClip sceneTransitionSFX;
 
     [Header("Overall Volume")]
     [Range(0f, 1f)] public float masterVolume = 1f;
@@ -45,6 +46,7 @@ public class SoundManager : MonoBehaviour
     [Range(0f, 1f)] public float enemyGunshotVolume = 1f;
     [Range(0f, 1f)] public float buttonHoverVolume = 1f;
     [Range(0f, 1f)] public float footstepVolume = 1f;
+    [Range(0f, 1f)] public float sceneTransitionVolume = 1f;
 
     void Awake()
     {
@@ -260,6 +262,11 @@ public class SoundManager : MonoBehaviour
     {
         if (Instance != null)
             Instance.PlaySFX(Instance.buttonHoverSFX, Instance.buttonHoverVolume);
+    }
+    public static void PlaySceneTransition()
+    {
+        if (Instance != null)
+            Instance.PlaySFX(Instance.sceneTransitionSFX, Instance.sceneTransitionVolume);
     }
     public static void StartFootsteps()
     {
