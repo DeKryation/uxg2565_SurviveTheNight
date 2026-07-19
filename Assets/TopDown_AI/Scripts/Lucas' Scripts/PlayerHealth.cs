@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -22,6 +23,14 @@ public class PlayerHealth : MonoBehaviour
     private bool isDead = false;
     private PlayerBehavior playerBehavior;
 
+    [Header("Player Hit Flash")]
+    public Renderer playerRenderer;
+    public Color hitColor = Color.red;
+    public float hitFlashDuration = 0.2f;
+
+    private Color originalColor;
+    private Coroutine hitFlashRoutine;
+
     void Awake()
     {
         playerBehavior = GetComponent<PlayerBehavior>();
@@ -37,6 +46,16 @@ public class PlayerHealth : MonoBehaviour
             lowHealthOverlay.SetActive(false);
         }
 
+        if (playerRenderer == null)
+        {
+            playerRenderer = GetComponentInChildren<Renderer>();
+        }
+
+        if (playerRenderer != null)
+        {
+            originalColor = playerRenderer.material.color;
+        }
+
         UpdateHealthUI();
     }
 
@@ -49,6 +68,7 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         SoundManager.PlayPlayerHit();
+        FlashPlayerRed();
 
         UpdateHealthUI();
 
@@ -106,5 +126,26 @@ public class PlayerHealth : MonoBehaviour
         {
             lowHealthOverlay.SetActive(currentHealth <= lowHealthThreshold);
         }
+    }
+    void FlashPlayerRed()
+    {
+        if (playerRenderer == null)
+            return;
+
+        if (hitFlashRoutine != null)
+        {
+            StopCoroutine(hitFlashRoutine);
+        }
+
+        hitFlashRoutine = StartCoroutine(HitFlashRoutine());
+    }
+
+    IEnumerator HitFlashRoutine()
+    {
+        playerRenderer.material.color = hitColor;
+
+        yield return new WaitForSeconds(hitFlashDuration);
+
+        playerRenderer.material.color = originalColor;
     }
 }
