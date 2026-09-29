@@ -69,12 +69,12 @@ public class GameManager : MonoBehaviour
         switch (weaponType)
         {
             case PlayerWeaponType.KNIFE:
-                myslf.knifeSelector.SetActive(true);
+                myslf.knifeSelector.SetActive(false);
                 myslf.gunSelector.SetActive(false);
                 break;
             case PlayerWeaponType.PISTOL:
                 myslf.knifeSelector.SetActive(false);
-                myslf.gunSelector.SetActive(true);
+                myslf.gunSelector.SetActive(false);
                 break;
         }
 

@@ -30,6 +30,11 @@ public class SoundManager : MonoBehaviour
     public AudioClip sceneTransitionSFX;
     public AudioClip[] enemyDeathSFXVariations;
 
+    [Header("Tension SFX")]
+    public AudioClip tensionLowSFX;
+    public AudioClip tensionMediumSFX;
+    public AudioClip tensionHighSFX;
+
     [Header("Overall Volume")]
     [Range(0f, 1f)] public float masterVolume = 1f;
     [Range(0f, 1f)] public float musicVolume = 0.6f;
@@ -48,6 +53,9 @@ public class SoundManager : MonoBehaviour
     [Range(0f, 1f)] public float buttonHoverVolume = 1f;
     [Range(0f, 1f)] public float footstepVolume = 1f;
     [Range(0f, 1f)] public float sceneTransitionVolume = 1f;
+    [Range(0f, 1f)] public float tensionLowVolume = 1f;
+    [Range(0f, 1f)] public float tensionMediumVolume = 1f;
+    [Range(0f, 1f)] public float tensionHighVolume = 1f;
 
     void Awake()
     {
@@ -140,6 +148,24 @@ public class SoundManager : MonoBehaviour
         musicSource.clip = musicClip;
         musicSource.Play();
         ApplyVolume();
+    }
+
+    public static void PlayTensionLow()
+    {
+        if (Instance != null)
+            Instance.PlaySFX(Instance.tensionLowSFX, Instance.tensionLowVolume);
+    }
+
+    public static void PlayTensionMedium()
+    {
+        if (Instance != null)
+            Instance.PlaySFX(Instance.tensionMediumSFX, Instance.tensionMediumVolume);
+    }
+
+    public static void PlayTensionHigh()
+    {
+        if (Instance != null)
+            Instance.PlaySFX(Instance.tensionHighSFX, Instance.tensionHighVolume);
     }
 
     public void StopMusic()
