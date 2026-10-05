@@ -6,6 +6,9 @@ public class PauseMenu : MonoBehaviour
     [Header("Pause Menu UI")]
     [SerializeField] private GameObject pauseScreen;
 
+    [Header("Clickable Pause Button")]
+    [SerializeField] private GameObject pauseButton;
+
     [Header("Settings UI")]
     [SerializeField] private GameObject settingsScreen;
 
@@ -20,24 +23,23 @@ public class PauseMenu : MonoBehaviour
 
     private void Start()
     {
-        // Ensure the game starts normally.
         Time.timeScale = 1f;
         isPaused = false;
 
         if (pauseScreen != null)
-        {
             pauseScreen.SetActive(false);
-        }
 
         if (settingsScreen != null)
-        {
             settingsScreen.SetActive(false);
-        }
+
+        if (pauseButton != null)
+            pauseButton.SetActive(true);
 
         if (mouseControlScript != null)
-        {
             mouseControlScript.enabled = true;
-        }
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void Update()
@@ -67,36 +69,32 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
+    public void PauseButtonPressed()
+    {
+        TogglePause();
+    }
+
     public void PauseGame()
     {
         if (isPaused)
-        {
             return;
-        }
 
         isPaused = true;
 
         if (pauseScreen != null)
-        {
             pauseScreen.SetActive(true);
-        }
 
         if (settingsScreen != null)
-        {
             settingsScreen.SetActive(false);
-        }
 
-        // Stops the character, weapon, or camera from reacting
-        // to mouse movement while the pause menu is open.
+        //if (pauseButton != null)
+           // pauseButton.SetActive(false);
+
         if (mouseControlScript != null)
-        {
             mouseControlScript.enabled = false;
-        }
 
-        // Freeze time-based gameplay.
         Time.timeScale = 0f;
 
-        // Keep the cursor available for pause-menu buttons.
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
@@ -105,25 +103,20 @@ public class PauseMenu : MonoBehaviour
     {
         isPaused = false;
 
-        // Resume time-based gameplay.
         Time.timeScale = 1f;
 
         if (mouseControlScript != null)
-        {
             mouseControlScript.enabled = true;
-        }
 
         if (pauseScreen != null)
-        {
             pauseScreen.SetActive(false);
-        }
 
         if (settingsScreen != null)
-        {
             settingsScreen.SetActive(false);
-        }
 
-        // Keep this for a top-down game that uses the mouse cursor.
+        if (pauseButton != null)
+            pauseButton.SetActive(true);
+
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
@@ -131,41 +124,35 @@ public class PauseMenu : MonoBehaviour
     public void OpenSettings()
     {
         if (!isPaused)
-        {
             PauseGame();
-        }
 
         if (pauseScreen != null)
-        {
             pauseScreen.SetActive(false);
-        }
 
         if (settingsScreen != null)
-        {
             settingsScreen.SetActive(true);
-        }
+
+        if (pauseButton != null)
+            pauseButton.SetActive(false);
     }
 
     public void CloseSettings()
     {
         if (settingsScreen != null)
-        {
             settingsScreen.SetActive(false);
-        }
 
         if (pauseScreen != null)
-        {
             pauseScreen.SetActive(true);
-        }
+
+        if (pauseButton != null)
+            pauseButton.SetActive(false);
     }
 
     public void RestartLevel()
     {
         PrepareForSceneChange();
 
-        SceneManager.LoadScene(
-            SceneManager.GetActiveScene().buildIndex
-        );
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void ReturnToMainMenu()
@@ -198,14 +185,14 @@ public class PauseMenu : MonoBehaviour
         isPaused = false;
 
         if (mouseControlScript != null)
-        {
             mouseControlScript.enabled = true;
-        }
+
+        if (pauseButton != null)
+            pauseButton.SetActive(true);
     }
 
     private void OnDestroy()
     {
-        // Prevent another scene from remaining frozen.
         Time.timeScale = 1f;
     }
 }

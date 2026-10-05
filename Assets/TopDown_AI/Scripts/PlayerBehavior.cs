@@ -1,34 +1,48 @@
 ﻿using UnityEngine;
 using System.Collections;
-public enum PlayerWeaponType{KNIFE,PISTOL,NULL}
-public class PlayerBehavior : MonoBehaviour {
-	Rigidbody myRigidBody;
-	public float moveSpeed=10.0f;
-	public Transform hitTestPivot,gunPivot;
-	public GameObject mousePointer,proyectilePrefab;
-	public Animator animator;
-	int hashSpeed;
-	float attackTime=0.4f;
-	 PlayerWeaponType currentWeapon=PlayerWeaponType.NULL;
-	Misc_Timer attackTimer = new Misc_Timer();
+
+public enum PlayerWeaponType { KNIFE, PISTOL, NULL }
+
+public class PlayerBehavior : MonoBehaviour
+{
+    Rigidbody myRigidBody;
+
+    public float moveSpeed = 10.0f;
+    public Transform hitTestPivot, gunPivot;
+    public GameObject mousePointer, proyectilePrefab;
+    public Animator animator;
+
+    int hashSpeed;
+    float attackTime = 0.4f;
+
+    PlayerWeaponType currentWeapon = PlayerWeaponType.NULL;
+
+    Misc_Timer attackTimer = new Misc_Timer();
+
     public MuzzleFlashLight muzzleFlash;
-    // Use this for initialization
-    void Awake() {
 
-	}
-	void Start () {
-		SetWeapon (PlayerWeaponType.PISTOL);
-		myRigidBody = GetComponent<Rigidbody> ();
-		hashSpeed = Animator.StringToHash ("Speed");
-		attackTimer.StartTimer (0.1f);
+    void Awake()
+    {
 
-	//	Cursor.visible = false;
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-        bool isMoving = Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f || Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f;
+    }
+
+    void Start()
+    {
+        // Player starts with no weapon.
+        SetWeapon(PlayerWeaponType.NULL);
+
+        myRigidBody = GetComponent<Rigidbody>();
+        hashSpeed = Animator.StringToHash("Speed");
+        attackTimer.StartTimer(0.1f);
+
+        // Cursor.visible = false;
+    }
+
+    void Update()
+    {
+        bool isMoving =
+            Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f ||
+            Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f;
 
         if (isMoving)
         {
@@ -38,34 +52,31 @@ public class PlayerBehavior : MonoBehaviour {
         {
             SoundManager.StopFootsteps();
         }
-        animator.SetFloat (hashSpeed, myRigidBody.linearVelocity .magnitude);
-		float inputHorizontal = Input.GetAxis ("Horizontal");
-		float inputVertical = Input.GetAxis ("Vertical");
-	//	float speedY = inputVertical > 0.1 ? Mathf.Clamp ((inputVertical * moveSpeed), moveSpeed / 2.0f, moveSpeed) : 0.0f;
-		//float speedX = inputHorizontal > 0.1 ? Mathf.Clamp ((inputHorizontal * moveSpeed), moveSpeed / 2.0f, moveSpeed) : 0.0f;
-		Vector3 newVelocity=new Vector3(inputVertical*moveSpeed, 0.0f, inputHorizontal*-moveSpeed);
-		myRigidBody.linearVelocity = newVelocity;
-		switch (currentWeapon) {
-			case PlayerWeaponType.KNIFE:
-				if (Input.GetMouseButton (0) && attackTimer.IsFinished()) {
-					Attack();
-				}
-			break;
-			case PlayerWeaponType.PISTOL:
-				if (Input.GetMouseButtonDown (0) && attackTimer.IsFinished()) {
 
-					Attack();
-				}
-			break;
-		}
+        animator.SetFloat(hashSpeed, myRigidBody.linearVelocity.magnitude);
 
-		if (Input.GetKeyDown (KeyCode.Alpha1))
-			SetWeapon (PlayerWeaponType.KNIFE);
-		if (Input.GetKeyDown (KeyCode.Alpha2))
-			SetWeapon (PlayerWeaponType.PISTOL);
-		attackTimer.UpdateTimer ();
-		UpdateAim ();
-	}
+        float inputHorizontal = Input.GetAxis("Horizontal");
+        float inputVertical = Input.GetAxis("Vertical");
+
+        Vector3 newVelocity = new Vector3(
+            inputVertical * moveSpeed,
+            0.0f,
+            inputHorizontal * -moveSpeed
+        );
+
+        myRigidBody.linearVelocity = newVelocity;
+
+        // Attacking disabled.
+        // No shooting.
+        // No knifing.
+
+        // Weapon switching disabled.
+        // Alpha1 and Alpha2 no longer change weapons.
+
+        attackTimer.UpdateTimer();
+        UpdateAim();
+    }
+
     public void DamagePlayer()
     {
         PlayerHealth health = GetComponent<PlayerHealth>();
@@ -82,107 +93,72 @@ public class PlayerBehavior : MonoBehaviour {
     public void DiePlayer()
     {
         SoundManager.PlayPlayerDeath();
+
         animator.SetBool("Dead", true);
         animator.transform.parent = null;
+
         this.enabled = false;
+
         myRigidBody.isKinematic = true;
+
         GameManager.RegisterPlayerDeath();
+
         gameObject.GetComponent<Collider>().enabled = false;
+
         GameCamera.ToggleShake(0.3f);
     }
-    void UpdateAim(){
 
+    void UpdateAim()
+    {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.y = transform.position.y;
 
-		Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-		mousePos.y = transform.position.y;
-		mousePointer.transform.position = mousePos;
-		float deltaY = mousePos.z - transform.position.z;
-		float deltaX = mousePos.x - transform.position.x;
-		float angleInDegrees = Mathf.Atan2 (deltaY, deltaX) * 180 / Mathf.PI;
-		transform.eulerAngles = new Vector3 (0, -angleInDegrees, 0);
-	}
+        mousePointer.transform.position = mousePos;
+
+        float deltaY = mousePos.z - transform.position.z;
+        float deltaX = mousePos.x - transform.position.x;
+
+        float angleInDegrees = Mathf.Atan2(deltaY, deltaX) * 180 / Mathf.PI;
+
+        transform.eulerAngles = new Vector3(0, -angleInDegrees, 0);
+    }
+
     public void Attack()
     {
-        switch (currentWeapon)
-		{
-			case PlayerWeaponType.KNIFE:
-                SoundManager.PlayPlayerKnife();
-                Invoke("DoHitTest", 0.2f);
-                break;
-
-            case PlayerWeaponType.PISTOL:
-                PistolAmmo pistolAmmo = GetComponent<PistolAmmo>();
-
-				if (pistolAmmo != null)
-				{
-					if (!pistolAmmo.TryUseBullet())
-					{
-						return;
-					}
-				}
-				SoundManager.PlayPlayerShoot();
-
-                if (muzzleFlash != null)
-                {
-                    muzzleFlash.Flash();
-                }
-
-                GameCamera.ToggleShake(0.1f);
-                GameObject bullet = GameObject.Instantiate(proyectilePrefab, gunPivot.position, gunPivot.rotation) as GameObject;
-                bullet.transform.LookAt(mousePointer.transform);
-                bullet.transform.Rotate(0, Random.Range(-7.5f, 7.5f), 0);
-                AlertEnemies();
-                break;
-        }
-
-        animator.SetBool("Attack", true);
-        CancelInvoke("AttackOver");
-        Invoke("AttackOver", attackTime);
-        attackTimer.StartTimer(attackTime);
+        // Attacking disabled for this prototype.
+        return;
     }
-    void AlertEnemies(){
-		RaycastHit[] hits=Physics.SphereCastAll (hitTestPivot.position,20.0f, hitTestPivot.up);
-		foreach (RaycastHit hit in hits) {
-			if (hit.collider != null && hit.collider.tag == "Enemy") {
-				hit.collider.GetComponent<NPC_Enemy>().SetAlertPos(transform.position);
-			}
-		}
-	}
-	public void DoHitTest(){
 
+    void AlertEnemies()
+    {
+        RaycastHit[] hits = Physics.SphereCastAll(hitTestPivot.position, 20.0f, hitTestPivot.up);
 
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider != null && hit.collider.tag == "Enemy")
+            {
+                hit.collider.GetComponent<NPC_Enemy>().SetAlertPos(transform.position);
+            }
+        }
+    }
 
+    public void DoHitTest()
+    {
+        // Knife hit test disabled.
+        return;
+    }
 
-		RaycastHit[] hits=Physics.SphereCastAll (hitTestPivot.position,2.0f, hitTestPivot.up);
-		foreach(RaycastHit hit in hits){
-			if (hit.collider!=null && hit.collider.tag == "Enemy") {
-				RaycastHit forwarHit= new RaycastHit();
-				Physics.Raycast(hitTestPivot.position,hit.transform.position-transform.position,out forwarHit);
-				if (forwarHit.collider!=null && forwarHit.collider.tag == "Enemy") {
-					forwarHit.collider.GetComponent<NPC_Enemy>().Damage();
-				}
-			}
-		}
-	}
-	void AttackOver(){
-		animator.SetBool ("Attack", false);
-	}
-	
-	void SetWeapon(PlayerWeaponType weaponType){
-		if (weaponType != currentWeapon) {
-			currentWeapon = weaponType;
-			animator.SetTrigger ("WeaponChange");
-			switch (weaponType) {
-			case PlayerWeaponType.KNIFE:
-				attackTime=0.4f;
-				animator.SetInteger ("WeaponType", 0);
-				break;
-			case PlayerWeaponType.PISTOL:
-				attackTime=0.1f;
-				animator.SetInteger ("WeaponType", 3);
-				break;
-			}
-		}
-		GameManager.SelectWeapon (weaponType);
-	}
+    void AttackOver()
+    {
+        animator.SetBool("Attack", false);
+    }
+
+    void SetWeapon(PlayerWeaponType weaponType)
+    {
+        currentWeapon = PlayerWeaponType.NULL;
+
+        animator.SetInteger("WeaponType", 0);
+
+        GameManager.SelectWeapon(PlayerWeaponType.NULL);
+    }
 }
