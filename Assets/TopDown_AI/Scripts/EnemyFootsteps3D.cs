@@ -13,6 +13,11 @@ public class EnemyFootsteps3D : MonoBehaviour
     public float minGroanDelay = 4f;
     public float maxGroanDelay = 9f;
 
+    [Header("Monster Whisper Loop")]
+    public AudioClip monsterWhisperLoopSFX;
+    [Range(0f, 1f)] public float whisperVolume = 0.6f;
+    public bool playWhisperOnStart = true;
+
     [Header("3D Distance Settings")]
     public float minDistance = 2f;
     public float maxDistance = 18f;
@@ -28,8 +33,9 @@ public class EnemyFootsteps3D : MonoBehaviour
 
     private AudioSource footstepSource;
     private AudioSource groanSource;
-    private NavMeshAgent navMeshAgent;
+    private AudioSource whisperSource;
 
+    private NavMeshAgent navMeshAgent;
     private float nextGroanTime = 0f;
 
     void Awake()
@@ -48,17 +54,30 @@ public class EnemyFootsteps3D : MonoBehaviour
         groanSource.loop = false;
         groanSource.playOnAwake = false;
         groanSource.volume = groanVolume;
+
+        whisperSource = gameObject.AddComponent<AudioSource>();
+        Setup3DAudioSource(whisperSource);
+        whisperSource.clip = monsterWhisperLoopSFX;
+        whisperSource.loop = true;
+        whisperSource.playOnAwake = false;
+        whisperSource.volume = whisperVolume;
     }
 
     void Start()
     {
         SetNextGroanTime();
+
+        if (playWhisperOnStart)
+        {
+            StartWhisperLoop();
+        }
     }
 
     void Update()
     {
         HandleFootsteps();
         HandleRandomGroans();
+        UpdateWhisperVolume();
     }
 
     void HandleFootsteps()
@@ -127,12 +146,44 @@ public class EnemyFootsteps3D : MonoBehaviour
         nextGroanTime = Time.time + Random.Range(minGroanDelay, maxGroanDelay);
     }
 
+    void UpdateWhisperVolume()
+    {
+        if (whisperSource == null)
+            return;
+
+        whisperSource.volume = whisperVolume;
+    }
+
     void Setup3DAudioSource(AudioSource source)
     {
         source.spatialBlend = 1f;
         source.rolloffMode = AudioRolloffMode.Linear;
         source.minDistance = minDistance;
         source.maxDistance = maxDistance;
+    }
+
+    public void StartWhisperLoop()
+    {
+        if (whisperSource == null)
+            return;
+
+        if (monsterWhisperLoopSFX == null)
+            return;
+
+        if (!whisperSource.isPlaying)
+        {
+            whisperSource.clip = monsterWhisperLoopSFX;
+            whisperSource.loop = true;
+            whisperSource.Play();
+        }
+    }
+
+    public void StopWhisperLoop()
+    {
+        if (whisperSource != null && whisperSource.isPlaying)
+        {
+            whisperSource.Stop();
+        }
     }
 
     public void StopFootsteps()
@@ -150,5 +201,8 @@ public class EnemyFootsteps3D : MonoBehaviour
 
         if (groanSource != null)
             groanSource.Stop();
+
+        if (whisperSource != null)
+            whisperSource.Stop();
     }
 }

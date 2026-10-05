@@ -68,6 +68,7 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         SoundManager.PlayPlayerHit();
+        SoundManager.PlayPlayerHuffPuff();
         FlashPlayerRed();
 
         UpdateHealthUI();

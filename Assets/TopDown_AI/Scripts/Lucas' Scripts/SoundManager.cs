@@ -19,6 +19,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip playerShootSFX;
     public AudioClip playerKnifeSFX;
     public AudioClip playerHitSFX;
+    public AudioClip[] playerHitSFXVariations;
     public AudioClip playerDeathSFX;
     public AudioClip enemyDeathSFX;
     public AudioClip pickupExplosiveSFX;
@@ -29,6 +30,7 @@ public class SoundManager : MonoBehaviour
     public AudioClip footstepSFX;
     public AudioClip sceneTransitionSFX;
     public AudioClip[] enemyDeathSFXVariations;
+    public AudioClip playerHuffPuffSFX;
 
     [Header("Tension SFX")]
     public AudioClip tensionLowSFX;
@@ -56,6 +58,7 @@ public class SoundManager : MonoBehaviour
     [Range(0f, 1f)] public float tensionLowVolume = 1f;
     [Range(0f, 1f)] public float tensionMediumVolume = 1f;
     [Range(0f, 1f)] public float tensionHighVolume = 1f;
+    [Range(0f, 1f)] public float playerHuffPuffVolume = 1f;
 
     void Awake()
     {
@@ -246,8 +249,24 @@ public class SoundManager : MonoBehaviour
 
     public static void PlayPlayerHit()
     {
-        if (Instance != null)
-            Instance.PlaySFX(Instance.playerHitSFX, Instance.playerHitVolume);
+        if (Instance == null)
+            return;
+
+        // Always play the default hit sound.
+        Instance.PlaySFX(Instance.playerHitSFX, Instance.playerHitVolume);
+
+        // Also play 1 random hit variation, if assigned.
+        if (Instance.playerHitSFXVariations != null && Instance.playerHitSFXVariations.Length > 0)
+        {
+            AudioClip chosenVariation = Instance.playerHitSFXVariations[
+                Random.Range(0, Instance.playerHitSFXVariations.Length)
+            ];
+
+            if (chosenVariation != null)
+            {
+                Instance.PlaySFX(chosenVariation, Instance.playerHitVolume);
+            }
+        }
     }
 
     public static void PlayPlayerDeath()
@@ -334,5 +353,10 @@ public class SoundManager : MonoBehaviour
         {
             Instance.footstepSource.Stop();
         }
+    }
+    public static void PlayPlayerHuffPuff()
+    {
+        if (Instance != null)
+            Instance.PlaySFX(Instance.playerHuffPuffSFX, Instance.playerHuffPuffVolume);
     }
 }
