@@ -15,6 +15,7 @@ public class PlayerGrabQTE : MonoBehaviour
     public int successesNeeded = 3;
     public int maxMisses = 3;
     public float needleSpeed = 0.7f;
+
     [Range(0.05f, 0.4f)]
     public float successZoneWidth = 0.15f;
 
@@ -22,17 +23,24 @@ public class PlayerGrabQTE : MonoBehaviour
     public PlayerBehavior playerBehavior;
     public PlayerHealth playerHealth;
 
+    [Header("Progressive Jumpscares")]
+    public JumpscareManager jumpscareManager;
+
     private Rigidbody playerRb;
     private RigidbodyConstraints originalConstraints;
     private NPC_Enemy capturingEnemy;
 
     private bool qteActive = false;
+    private bool waitingForDeath = false;
+
     private float needlePosition = 0f;
     private float zoneCenter = 0.65f;
-    public bool IsActive => qteActive;
 
     private int successes = 0;
     private int misses = 0;
+
+    // Used by doors to prevent interaction during QTE.
+    public bool IsActive => qteActive || waitingForDeath;
 
     void Awake()
     {
@@ -67,19 +75,29 @@ public class PlayerGrabQTE : MonoBehaviour
             return;
         }
 
-        // Automatically miss when the needle passes the zone.
-        float zoneEnd = zoneCenter + successZoneWidth * 0.5f;
+        // Automatically miss when the needle
+        // moves past the green zone.
+        float zoneEnd =
+            zoneCenter + successZoneWidth * 0.5f;
 
         if (needlePosition > zoneEnd)
+        {
             RegisterMiss();
+        }
     }
 
     public bool BeginQTE(NPC_Enemy enemy)
     {
-        if (qteActive || enemy == null || qtePanel == null ||
-            trackRect == null || needleRect == null ||
+        if (qteActive ||
+            waitingForDeath ||
+            enemy == null ||
+            qtePanel == null ||
+            trackRect == null ||
+            needleRect == null ||
             successZoneRect == null)
+        {
             return false;
+        }
 
         qteActive = true;
         capturingEnemy = enemy;
@@ -87,26 +105,45 @@ public class PlayerGrabQTE : MonoBehaviour
         successes = 0;
         misses = 0;
 
-        // Stop the player's movement and attack controls.
+        // Disable player movement and attacks.
         if (playerBehavior != null)
             playerBehavior.enabled = false;
 
         SoundManager.StopFootsteps();
 
+        // Freeze the player.
         if (playerRb != null)
         {
             originalConstraints = playerRb.constraints;
+
             playerRb.linearVelocity = Vector3.zero;
             playerRb.angularVelocity = Vector3.zero;
-            playerRb.constraints = RigidbodyConstraints.FreezeAll;
+
+            playerRb.constraints =
+                RigidbodyConstraints.FreezeAll;
         }
 
+        // Zombie holds the player.
         enemy.BeginCapture();
 
+        // Show QTE immediately.
         qtePanel.SetActive(true);
 
         if (instructionText != null)
-            instructionText.text = "PRESS SPACE IN THE GREEN ZONE";
+        {
+            instructionText.text =
+                "PRESS SPACE IN THE GREEN ZONE";
+        }
+
+        // Play progressive jumpscare on every catch.
+        // QTE continues normally underneath.
+        if (jumpscareManager != null)
+        {
+            jumpscareManager.PlayCurrentJumpscare(
+                null,
+                true
+            );
+        }
 
         StartNextCheck();
 
@@ -117,7 +154,7 @@ public class PlayerGrabQTE : MonoBehaviour
     {
         needlePosition = 0f;
 
-        // Randomise the target position each check.
+        // Random target position.
         zoneCenter = Random.Range(0.35f, 0.8f);
 
         UpdateZoneVisual();
@@ -127,7 +164,8 @@ public class PlayerGrabQTE : MonoBehaviour
 
     void CheckTiming()
     {
-        float halfWidth = successZoneWidth * 0.5f;
+        float halfWidth =
+            successZoneWidth * 0.5f;
 
         bool successful =
             needlePosition >= zoneCenter - halfWidth &&
@@ -169,8 +207,10 @@ public class PlayerGrabQTE : MonoBehaviour
         if (progressText != null)
         {
             progressText.text =
-                "SUCCESS: " + successes + "/" + successesNeeded +
-                "   MISSES: " + misses + "/" + maxMisses;
+                "SUCCESS: " +
+                successes + "/" + successesNeeded +
+                "   MISSES: " +
+                misses + "/" + maxMisses;
         }
     }
 
@@ -189,7 +229,8 @@ public class PlayerGrabQTE : MonoBehaviour
 
     void UpdateZoneVisual()
     {
-        if (trackRect == null || successZoneRect == null)
+        if (trackRect == null ||
+            successZoneRect == null)
             return;
 
         float width = trackRect.rect.width;
@@ -214,19 +255,22 @@ public class PlayerGrabQTE : MonoBehaviour
 
         if (escaped)
         {
-            // Restore player controls.
+            // Restore Rigidbody constraints.
             if (playerRb != null)
             {
-                playerRb.constraints = originalConstraints;
-                playerRb.linearVelocity = Vector3.zero;
+                playerRb.constraints =
+                    originalConstraints;
+
+                playerRb.linearVelocity =
+                    Vector3.zero;
             }
 
+            // Restore player controls.
             if (playerBehavior != null)
                 playerBehavior.enabled = true;
 
-            // Apply damage only AFTER the QTE is complete.
-            // Perfect escape = no damage.
-            // Escape with mistakes = 1 damage.
+            // Always lose 1 HP after escaping.
+            // Even if every check was successful.
             if (playerHealth != null)
             {
                 playerHealth.TakeDamage(1);
@@ -234,17 +278,52 @@ public class PlayerGrabQTE : MonoBehaviour
 
             TensionDirector.ResetTension();
 
-            // Zombie retreats after releasing the player.
+            // Zombie releases the player and flees.
             if (capturingEnemy != null)
+            {
                 capturingEnemy.EndCapture(transform);
+            }
+
+            capturingEnemy = null;
         }
         else
         {
-            // All QTE attempts failed: immediate game over.
-            if (playerHealth != null)
-                playerHealth.ForceDeath();
-            else if (playerBehavior != null)
-                playerBehavior.DiePlayer();
+            // Player failed the entire QTE.
+            // Keep controls locked during death jumpscare.
+            waitingForDeath = true;
+
+            if (jumpscareManager != null)
+            {
+                bool started =
+                    jumpscareManager.PlayDeathJumpscare(
+                        TriggerQTEDeath
+                    );
+
+                if (!started)
+                    TriggerQTEDeath();
+            }
+            else
+            {
+                TriggerQTEDeath();
+            }
+        }
+    }
+
+    void TriggerQTEDeath()
+    {
+        if (!waitingForDeath)
+            return;
+
+        waitingForDeath = false;
+
+        // Prevent duplicate death events.
+        if (playerHealth != null)
+        {
+            playerHealth.ForceDeath();
+        }
+        else if (playerBehavior != null)
+        {
+            playerBehavior.DiePlayer();
         }
 
         capturingEnemy = null;

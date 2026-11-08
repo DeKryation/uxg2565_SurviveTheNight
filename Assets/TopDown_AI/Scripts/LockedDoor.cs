@@ -20,9 +20,11 @@ public class LockedDoor : MonoBehaviour
     [Header("Door Audio")]
     public AudioClip doorOpenSFX;
     public AudioClip doorCloseSFX;
+    public AudioClip doorFailedSFX;
 
-    [Range(0f, 1f)]
-    public float volume = 0.8f;
+    [Range(0f, 1f)] public float openVolume = 0.8f;
+    [Range(0f, 1f)] public float closeVolume = 0.8f;
+    [Range(0f, 1f)] public float failedVolume = 0.8f;
 
     public float minDistance = 3f;
     public float maxDistance = 25f;
@@ -99,15 +101,19 @@ public class LockedDoor : MonoBehaviour
         if (!Input.GetKeyDown(interactionKey))
             return;
 
+        // Prevent opening doors during QTE.
         PlayerGrabQTE qte =
             player.GetComponent<PlayerGrabQTE>();
 
         if (qte != null && qte.IsActive)
             return;
 
+        // Door is locked without the required key.
         if (keyInventory == null ||
             keyInventory.keysCollected < keysRequired)
         {
+            PlayDoorSound(doorFailedSFX, failedVolume);
+
             Debug.Log("Door is locked. A key is required!");
             return;
         }
@@ -142,7 +148,7 @@ public class LockedDoor : MonoBehaviour
 
         isOpen = true;
 
-        PlayDoorSound(doorOpenSFX);
+        PlayDoorSound(doorOpenSFX, openVolume);
     }
 
     public void CloseDoor()
@@ -152,12 +158,14 @@ public class LockedDoor : MonoBehaviour
 
         isOpen = false;
 
-        PlayDoorSound(doorCloseSFX);
+        PlayDoorSound(doorCloseSFX, closeVolume);
     }
 
-    void PlayDoorSound(AudioClip clip)
+    void PlayDoorSound(AudioClip clip, float clipVolume)
     {
         if (clip != null && audioSource != null)
-            audioSource.PlayOneShot(clip, volume);
+        {
+            audioSource.PlayOneShot(clip, clipVolume);
+        }
     }
 }

@@ -1,220 +1,330 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-public class NPCSensor_Sight : NPCSensor_Base {
-	const float SIGHT_DIRECT_ANGLE =120.0f,SIGHT_MIN_DISTANCE=0.2f,SIGHT_MAX_DISTANCE=20.0f;//,SIGHT_INDIRECT_ANGLE = 80,SIGHT_INDIRECT_DISTANCE=20.0f;
-	float height=2.0f;
-	public LayerMask hitTestMask;
-	Color fovColor;
-	float TARGET_LOST_COOLDOWN=1.0f,ALERTED_COOLDOWN=10.0f,lastTargetTime=float.MinValue,lastAlertTime=float.MinValue;
-	Vector3 _lastTargetPos;
-	bool alerted=false;
-	bool somethingSpotted=false;
-	float lastSightTime=float.MinValue;
-	float SIGHT_DELAY_TIME=0.1f; //Time a object has to stay in sight to catch our attention
-	public Color idleColor, alertedColor, attackColor;
-	//TODO ADD the visual thingy
-	protected override void StartSensor(){
-		//InitFoV ();
-		material.SetColor ("_Color", Color.green);	
-	}
-	protected override void UpdateSensor(){
-		GetTargetInSight ();
-		//UpdateFoV ();
-	}
-	bool targetSpotted=false;
-	void GetTargetInSight(){
-		Collider[] overlapedObjects= Physics.OverlapSphere (transform.position, SIGHT_MAX_DISTANCE);
-	
 
+public class NPCSensor_Sight : NPCSensor_Base
+{
+    [Header("Zombie Sight Settings")]
+    [Tooltip("Maximum distance at which the zombie can see the player.")]
+    public float sightRange = 30f;
 
-	
-		for (int i=0; i<overlapedObjects.Length; i++) {
-			Vector3 direction = overlapedObjects [i].transform.position - transform.position;
-			float objAngle = Vector3.Angle (direction, transform.forward);
-			if (overlapedObjects [i].tag == "Player") { 
-				if ( objAngle < SIGHT_DIRECT_ANGLE && TargetInSight (overlapedObjects [i].transform, SIGHT_MAX_DISTANCE )) {
-					npcBase.SetTargetPos(overlapedObjects [i].transform.position);
-					material.SetColor ("_Color", attackColor);	
-				}
-				else{
-					material.SetColor ("_Color", idleColor);	
-				}
-			/*	if (objAngle < SIGHT_INDIRECT_ANGLE && TargetInSight (overlapedObjects [i].transform, SIGHT_INDIRECT_DISTANCE / 2.0f)) {
-					if(!somethingSpotted){
-						lastSightTime=Time.time;
-						somethingSpotted=true;
-					}
-					if(lastSightTime+SIGHT_DELAY_TIME>Time.time){ //Cant react yet
-						return;
-					}
+    [Tooltip("Half-angle of the detection cone. 60 means 120 degrees total.")]
+    [Range(0f, 180f)]
+    public float sightAngle = 120f;
 
-					_lastTargetPos = overlapedObjects [i].transform.position;
-					material.SetColor ("_Color", Color.magenta);
-					npcBase.SetTargetPos (_lastTargetPos);
-					lastAlertTime=Time.time;
-					if(!alerted){
-						//npcBase.SetStatusCondition(NPC_Condition.ALERTED, true);	
-						alerted=true;
-					}
-				}
-				if (alerted && objAngle < SIGHT_DIRECT_ANGLE && TargetInSight (overlapedObjects [i].transform, SIGHT_DIRECT_DISTANCE / 2.0f)) {																							
-						
-						_lastTargetPos = overlapedObjects [i].transform.position;
-						material.SetColor ("_Color", Color.red);						
-						npcBase.SetTargetPos (_lastTargetPos);
-						lastTargetTime = Time.time;
-						lastAlertTime=Time.time;
-						if(!targetSpotted){
-							//npcBase.SetStatusCondition(NPC_Condition.HAS_TARGET, true);								
-							targetSpotted = true;
-						}
-						
-				} */
+    [Tooltip("Height of the sight ray above the zombie's position.")]
+    public float height = 2f;
 
-			}	else{
-				material.SetColor ("_Color", idleColor);	
-				//somethingSpotted=false;
-			}			
-		}
-		if (alerted && lastAlertTime + ALERTED_COOLDOWN < Time.time) {
-			material.SetColor ("_Color", Color.green);
-			alerted=false;
-			//npcBase.SetStatusCondition(NPC_Condition.ALERTED, false);	
-		}
-		if (alerted && targetSpotted && lastTargetTime + TARGET_LOST_COOLDOWN < Time.time) {
-				if(alerted)
-					material.SetColor ("_Color", Color.magenta);
-				else
-					material.SetColor ("_Color", Color.green);	
-				targetSpotted=false;
-				//npcBase.SetStatusCondition(NPC_Condition.HAS_TARGET, false);
+    [Header("Chase Memory")]
+    [Tooltip("How many seconds the zombie remembers the player after losing sight.")]
+    public float chaseMemoryDuration = 10f;
 
-		} 
-				
-	
-		
-	}
-	bool TargetInSight(Transform target,float distance){
-		Vector3 sightPosition = transform.position;
-		sightPosition.y += height;
-		RaycastHit hit = new RaycastHit ();
-		Vector3 dir= target.position-sightPosition;
-		//Debug.DrawRay (headTransform.position, dir);
-		Physics.Raycast (sightPosition,dir,out hit,distance,hitTestMask);
-		return (hit.collider != null && target.gameObject == hit.collider.gameObject);
-	}
+    [Tooltip("How frequently the zombie updates its last known target.")]
+    public float memoryUpdateInterval = 0.5f;
 
-	int quality = 100;
-	Mesh mesh;
-	public Material material;	
-/*	float angle_fov = 40;	
-	float dist_min = 0.1f;
-	float dist_max = 10.0f;*/
-	void InitFoV()
-	{
-		mesh = new Mesh();
-		mesh.vertices = new Vector3[2 * quality + 2];   // Could be of size [2 * quality + 2] if circle segment is continuous
-		mesh.triangles = new int[3 * 2 * quality];
-		
-		Vector3[] normals = new Vector3[2 * quality + 2];
-		Vector2[] uv = new Vector2[2 * quality + 2];
-		
-		for (int i = 0; i < uv.Length; i++)
-			uv[i] = new Vector2(0, 0);
-		for (int i = 0; i < normals.Length; i++)
-			normals[i] = new Vector3(0, 1, 0);
-		
-		mesh.uv = uv;
-		mesh.normals = normals;
-		transform.Rotate (0.0f, 360 * -0.05f, 0.0f);
-		//iTween.RotateBy (gameObject, iTween.Hash ("y", 0.1f, "time", 4.0f, "looptype", iTween.LoopType.pingPong,"easetype",iTween.EaseType.easeInOutSine));
+    [Header("Sight Raycast")]
+    public LayerMask hitTestMask;
 
-	}
-	float FoVHeight=0.1f;
-	void UpdateFoV()
-	{
-		float angle_lookat = GetEnemyAngle();
-		
-		float angle_start = angle_lookat - SIGHT_DIRECT_ANGLE;
-		float angle_end = angle_lookat + SIGHT_DIRECT_ANGLE;
-		float angle_delta = (angle_end - angle_start) / quality;
-		
-		float angle_curr = angle_start;
-		float angle_next = angle_start + angle_delta;
-		
-		Vector3 pos_curr_min = Vector3.zero;
-		Vector3 pos_curr_max = Vector3.zero;
-		
-		Vector3 pos_next_min = Vector3.zero;
-		Vector3 pos_next_max = Vector3.zero;
-		
+    [Header("Sight Colors")]
+    public Color idleColor = Color.green;
+    public Color alertedColor = Color.yellow;
+    public Color attackColor = Color.red;
 
-		
-		Vector3[] vertices = new Vector3[4 * quality];   // Could be of size [2 * quality + 2] if circle segment is continuous
-		int[] triangles = new int[3 * 2 * quality];
-		Vector3 fovPos = transform.position;
-		fovPos.y += FoVHeight;
-		for (int i = 0; i < quality; i++)
-		{
-			
-			Vector3 sphere_curr = new Vector3(
-				Mathf.Sin(Mathf.Deg2Rad * (angle_curr)), 0.0f,   // Left handed CW
-				Mathf.Cos(Mathf.Deg2Rad * (angle_curr)));
-			
-			Vector3 sphere_next = new Vector3(
-				Mathf.Sin(Mathf.Deg2Rad * (angle_next)), 0.0f,
-				Mathf.Cos(Mathf.Deg2Rad * (angle_next)));
-			
-			pos_curr_min = fovPos + sphere_curr * SIGHT_MIN_DISTANCE;
-			pos_curr_max = fovPos + sphere_curr * SIGHT_MAX_DISTANCE;
-			pos_next_min = fovPos + sphere_next * SIGHT_MIN_DISTANCE;
-			pos_next_max = fovPos + sphere_next * SIGHT_MAX_DISTANCE;
-		
-			int a = 4 * i;
-			int b = 4 * i + 1;
-			int c = 4 * i + 2;
-			int d = 4 * i + 3;
+    [Header("Visual Material")]
+    public Material material;
 
-			RaycastHit currRay=new RaycastHit(),nextRay=new RaycastHit();
-			Physics.Raycast(pos_curr_min,pos_curr_max-pos_curr_min,out currRay,SIGHT_MAX_DISTANCE-SIGHT_MIN_DISTANCE);
-			Physics.Raycast(pos_next_min,pos_next_max-pos_next_min,out nextRay,SIGHT_MAX_DISTANCE-SIGHT_MIN_DISTANCE);
-			
-			if(currRay.collider!=null){
-				float dist=Vector3.Distance(currRay.point,pos_curr_min)+SIGHT_MIN_DISTANCE;
-				pos_curr_max = transform.position + sphere_curr * dist;
-			}
-			if(nextRay.collider!=null){
-				float dist=Vector3.Distance(nextRay.point,pos_next_min)+SIGHT_MIN_DISTANCE;
-				pos_next_max = transform.position + sphere_next * dist;
-			}
-		
-			vertices[a] = pos_curr_min; 
-			vertices[b] = pos_curr_max;
-			vertices[c] = pos_next_max;
-			vertices[d] = pos_next_min;
-			
-			triangles[6 * i] = a;       // Triangle1: abc
-			triangles[6 * i + 1] = b;  
-			triangles[6 * i + 2] = c;
-			triangles[6 * i + 3] = c;   // Triangle2: cda
-			triangles[6 * i + 4] = d;
-			triangles[6 * i + 5] = a;
-			
-			angle_curr += angle_delta;
-			angle_next += angle_delta;
-			
-		}
-		
-		mesh.vertices = vertices;
-		mesh.triangles = triangles;
-		mesh.RecalculateNormals ();
-		Graphics.DrawMesh(mesh, Vector3.zero, Quaternion.identity, material, 0);
-	}
-	
-	float GetEnemyAngle()
-	{
-		return 90 - Mathf.Rad2Deg * Mathf.Atan2(transform.forward.z, transform.forward.x); // Left handed CW. z = angle 0, x = angle 90
-	}
+    private const float SIGHT_MIN_DISTANCE = 0.2f;
 
+    private Vector3 lastKnownPlayerPosition;
+    private float lastTargetTime = float.NegativeInfinity;
+    private float nextMemoryUpdateTime = 0f;
+
+    private bool targetSpotted = false;
+    private bool wasCapturing = false;
+
+    private PlayerGrabQTE playerQTE;
+
+    protected override void StartSensor()
+    {
+        GameObject playerObject =
+            GameObject.FindGameObjectWithTag("Player");
+
+        if (playerObject != null)
+        {
+            playerQTE = playerObject.GetComponent<PlayerGrabQTE>();
+        }
+
+        SetSightColor(idleColor);
+    }
+
+    protected override void UpdateSensor()
+    {
+        // Do not update pursuit while the player is in a QTE.
+        if (playerQTE != null && playerQTE.IsActive)
+        {
+            wasCapturing = true;
+            ClearChaseMemory();
+            return;
+        }
+
+        // When the capture finishes, discard the old target.
+        // The zombie's FLEE state should control its next movement.
+        if (wasCapturing)
+        {
+            wasCapturing = false;
+            ClearChaseMemory();
+        }
+
+        GetTargetInSight();
+    }
+
+    void GetTargetInSight()
+    {
+        bool playerVisible = false;
+
+        Collider[] overlappingObjects = Physics.OverlapSphere(
+            transform.position,
+            sightRange
+        );
+
+        foreach (Collider targetCollider in overlappingObjects)
+        {
+            if (!targetCollider.CompareTag("Player"))
+                continue;
+
+            Vector3 direction =
+                targetCollider.transform.position - transform.position;
+
+            // Use horizontal direction for the field-of-view check.
+            direction.y = 0f;
+
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+
+            if (direction.sqrMagnitude < 0.0001f)
+                continue;
+
+            float objAngle = Vector3.Angle(direction, forward);
+
+            if (objAngle <= sightAngle &&
+                TargetInSight(targetCollider.transform, sightRange))
+            {
+                playerVisible = true;
+
+                lastKnownPlayerPosition =
+                    targetCollider.transform.position;
+
+                lastTargetTime = Time.time;
+                targetSpotted = true;
+
+                npcBase.SetTargetPos(lastKnownPlayerPosition);
+
+                SetSightColor(attackColor);
+                break;
+            }
+        }
+
+        if (playerVisible)
+            return;
+
+        // The player has disappeared from view.
+        // Keep pursuing their last known location.
+        if (targetSpotted &&
+            Time.time - lastTargetTime < chaseMemoryDuration)
+        {
+            if (Time.time >= nextMemoryUpdateTime)
+            {
+                npcBase.SetTargetPos(lastKnownPlayerPosition);
+
+                nextMemoryUpdateTime =
+                    Time.time + Mathf.Max(0.05f, memoryUpdateInterval);
+            }
+
+            SetSightColor(alertedColor);
+            return;
+        }
+
+        // Chase memory has expired.
+        ClearChaseMemory();
+        SetSightColor(idleColor);
+    }
+
+    bool TargetInSight(Transform target, float distance)
+    {
+        Vector3 sightPosition = transform.position;
+        sightPosition.y += height;
+
+        Vector3 direction = target.position - sightPosition;
+
+        if (direction.sqrMagnitude < 0.0001f)
+            return true;
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(
+            sightPosition,
+            direction.normalized,
+            out hit,
+            distance,
+            hitTestMask,
+            QueryTriggerInteraction.Ignore))
+        {
+            return hit.collider != null &&
+                   hit.collider.transform == target;
+        }
+
+        return false;
+    }
+
+    void ClearChaseMemory()
+    {
+        targetSpotted = false;
+        lastTargetTime = float.NegativeInfinity;
+        nextMemoryUpdateTime = 0f;
+    }
+
+    void SetSightColor(Color newColor)
+    {
+        if (material != null)
+            material.SetColor("_Color", newColor);
+    }
+
+    // Optional: Call this if another system needs to reset sight.
+    public void ResetSightMemory()
+    {
+        ClearChaseMemory();
+        SetSightColor(idleColor);
+    }
+
+    // -----------------------------------------------------
+    // FIELD OF VIEW VISUALISATION
+    // Kept for compatibility with your original script.
+    // -----------------------------------------------------
+
+    private int quality = 100;
+    private Mesh mesh;
+
+    private float FoVHeight = 0.1f;
+
+    void InitFoV()
+    {
+        mesh = new Mesh();
+
+        mesh.vertices = new Vector3[4 * quality];
+        mesh.triangles = new int[6 * quality];
+
+        transform.Rotate(0f, -18f, 0f);
+    }
+
+    void UpdateFoV()
+    {
+        if (mesh == null)
+            InitFoV();
+
+        float angleLookAt = GetEnemyAngle();
+
+        float angleStart = angleLookAt - sightAngle;
+        float angleEnd = angleLookAt + sightAngle;
+
+        float angleDelta = (angleEnd - angleStart) / quality;
+
+        Vector3[] vertices = new Vector3[4 * quality];
+        int[] triangles = new int[6 * quality];
+
+        Vector3 fovPos = transform.position;
+        fovPos.y += FoVHeight;
+
+        for (int i = 0; i < quality; i++)
+        {
+            float angleCurr = angleStart + angleDelta * i;
+            float angleNext = angleCurr + angleDelta;
+
+            Vector3 sphereCurr = new Vector3(
+                Mathf.Sin(Mathf.Deg2Rad * angleCurr),
+                0f,
+                Mathf.Cos(Mathf.Deg2Rad * angleCurr)
+            );
+
+            Vector3 sphereNext = new Vector3(
+                Mathf.Sin(Mathf.Deg2Rad * angleNext),
+                0f,
+                Mathf.Cos(Mathf.Deg2Rad * angleNext)
+            );
+
+            Vector3 posCurrMin =
+                fovPos + sphereCurr * SIGHT_MIN_DISTANCE;
+
+            Vector3 posCurrMax =
+                fovPos + sphereCurr * sightRange;
+
+            Vector3 posNextMin =
+                fovPos + sphereNext * SIGHT_MIN_DISTANCE;
+
+            Vector3 posNextMax =
+                fovPos + sphereNext * sightRange;
+
+            RaycastHit currHit;
+            RaycastHit nextHit;
+
+            if (Physics.Raycast(
+                posCurrMin,
+                sphereCurr,
+                out currHit,
+                sightRange - SIGHT_MIN_DISTANCE,
+                hitTestMask))
+            {
+                posCurrMax = currHit.point;
+            }
+
+            if (Physics.Raycast(
+                posNextMin,
+                sphereNext,
+                out nextHit,
+                sightRange - SIGHT_MIN_DISTANCE,
+                hitTestMask))
+            {
+                posNextMax = nextHit.point;
+            }
+
+            int a = 4 * i;
+            int b = a + 1;
+            int c = a + 2;
+            int d = a + 3;
+
+            vertices[a] = posCurrMin;
+            vertices[b] = posCurrMax;
+            vertices[c] = posNextMax;
+            vertices[d] = posNextMin;
+
+            triangles[6 * i] = a;
+            triangles[6 * i + 1] = b;
+            triangles[6 * i + 2] = c;
+
+            triangles[6 * i + 3] = c;
+            triangles[6 * i + 4] = d;
+            triangles[6 * i + 5] = a;
+        }
+
+        mesh.Clear();
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+
+        if (material != null)
+        {
+            Graphics.DrawMesh(
+                mesh,
+                Vector3.zero,
+                Quaternion.identity,
+                material,
+                0
+            );
+        }
+    }
+
+    float GetEnemyAngle()
+    {
+        return 90f - Mathf.Rad2Deg *
+            Mathf.Atan2(transform.forward.z, transform.forward.x);
+    }
 }
