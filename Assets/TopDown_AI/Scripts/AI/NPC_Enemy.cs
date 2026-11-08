@@ -40,7 +40,13 @@ public class NPC_Enemy : MonoBehaviour
 	public float fleeDistance = 12f;
 	public float fleeTime = 2.5f;
 
-	private Misc_Timer fleeTimer = new Misc_Timer();
+    [Header("QTE Capture")]
+    private bool isCapturing = false;
+    private float nextAllowedAggroTime = 0f;
+
+    public float postCaptureCooldown = 3f;
+
+    private Misc_Timer fleeTimer = new Misc_Timer();
 	private Transform playerToFleeFrom;
 
 	// Use this for initialization
@@ -76,14 +82,21 @@ public class NPC_Enemy : MonoBehaviour
 				break;
 		}
 	}
-	// Update is called once per frame
-	void Update()
-	{
-		_updateState();
+    // Update is called once per frame
+    void Update()
+    {
+        if (isCapturing)
+            return;
 
-		npcAnimator.SetFloat(hashSpeed, navMeshAgent.velocity.magnitude);
-	}
-	public void SetState(NPC_EnemyState newState)
+        if (_updateState != null)
+            _updateState();
+
+        npcAnimator.SetFloat(
+            hashSpeed,
+            navMeshAgent.velocity.magnitude
+        );
+    }
+    public void SetState(NPC_EnemyState newState)
 	{
 		if (currentState != newState)
 		{
@@ -320,35 +333,49 @@ public class NPC_Enemy : MonoBehaviour
 	{
 		npcAnimator.SetBool("Attack", false);
 	}
-	void EndAttack()
-	{
-        if (currentState == NPC_EnemyState.FLEE)
+    void EndAttack()
+    {
+        if (isCapturing ||
+            currentState == NPC_EnemyState.FLEE)
             return;
 
         SetState(NPC_EnemyState.INSPECT);
     }
-	void AttackAction()
+    void AttackAction()
 	{
 		switch (weaponType)
 		{
-			case NPC_WeaponType.KNIFE:
-				RaycastHit[] hits = Physics.SphereCastAll(weaponPivot.position, 2.0f, weaponPivot.forward);
-				SoundManager.PlayPlayerKnife();
+            case NPC_WeaponType.KNIFE:
 
-				foreach (RaycastHit hit in hits)
-				{
-                    if (hit.collider != null && hit.collider.CompareTag("Player"))
+                if (isCapturing)
+                    return;
+
+                // Check for a nearby player to grab.
+                Collider[] targets = Physics.OverlapSphere(
+                    weaponPivot.position,
+                    weaponRange + 0.7f,
+                    ~0,
+                    QueryTriggerInteraction.Ignore
+                );
+
+                foreach (Collider target in targets)
+                {
+                    PlayerGrabQTE playerQTE =
+                        target.GetComponentInParent<PlayerGrabQTE>();
+
+                    if (playerQTE != null)
                     {
-                        hit.collider.GetComponent<PlayerBehavior>().DamagePlayer();
-                        TensionDirector.ResetTension();
-                        playerToFleeFrom = hit.collider.transform;
-                        SetState(NPC_EnemyState.FLEE);
-
-                        return;
+                        // Start the QTE instead of dealing immediate damage.
+                        if (playerQTE.BeginQTE(this))
+                        {
+                            SoundManager.PlayPlayerKnife();
+                            return;
+                        }
                     }
                 }
-				break;
-			case NPC_WeaponType.RIFLE:
+
+                break;
+            case NPC_WeaponType.RIFLE:
 				GameObject bullet = GameObject.Instantiate(proyectilePrefab, weaponPivot.position, weaponPivot.rotation) as GameObject;
 				bullet.transform.Rotate(0, Random.Range(-7.5f, 7.5f), 0);
 				SoundManager.PlayEnemyGunshot();
@@ -403,15 +430,22 @@ public class NPC_Enemy : MonoBehaviour
 			SetTargetPos(newPos);
 		}
 	}
-	public void SetTargetPos(Vector3 newPos)
-	{
-        if (currentState == NPC_EnemyState.ATTACK || currentState == NPC_EnemyState.FLEE)
+    public void SetTargetPos(Vector3 newPos)
+    {
+        if (isCapturing)
+            return;
+
+        if (Time.time < nextAllowedAggroTime)
+            return;
+
+        if (currentState == NPC_EnemyState.ATTACK ||
+            currentState == NPC_EnemyState.FLEE)
             return;
 
         targetPos = newPos;
         SetState(NPC_EnemyState.INSPECT);
     }
-	public void Damage()
+    public void Damage()
 	{
 		navMeshAgent.velocity = Vector3.zero;
 		//navMeshAgent.Stop ();
@@ -490,40 +524,66 @@ public class NPC_Enemy : MonoBehaviour
         else
         {
             navMeshAgent.SetDestination(transform.position + fleeDirection * 4f);
-        }
+		}
+	}
+
+	void StateUpdate_Flee()
+	{
+		fleeTimer.UpdateTimer();
+
+		// Keep running away while flee timer is active.
+		if (playerToFleeFrom != null)
+		{
+			Vector3 fleeDirection = transform.position - playerToFleeFrom.position;
+
+			if (fleeDirection.magnitude < 0.1f)
+			{
+				fleeDirection = -transform.forward;
+			}
+
+			fleeDirection.Normalize();
+
+			Vector3 fleeTarget = transform.position + fleeDirection * fleeDistance;
+
+			UnityEngine.AI.NavMeshHit navHit;
+
+			if (UnityEngine.AI.NavMesh.SamplePosition(fleeTarget, out navHit, fleeDistance, UnityEngine.AI.NavMesh.AllAreas))
+			{
+				navMeshAgent.SetDestination(navHit.position);
+			}
+		}
+
+		if (fleeTimer.IsFinished())
+		{
+			playerToFleeFrom = null;
+			SetState(idleState);
+		}
+	}
+    public void BeginCapture()
+    {
+        isCapturing = true;
+
+        CancelInvoke("AttackAction");
+
+        navMeshAgent.isStopped = true;
+        navMeshAgent.velocity = Vector3.zero;
+
+        npcAnimator.SetBool("Attack", false);
+        npcAnimator.SetFloat("Speed", 0f);
     }
 
-    void StateUpdate_Flee()
+    public void EndCapture(Transform player)
     {
-        fleeTimer.UpdateTimer();
+        isCapturing = false;
 
-        // Keep running away while flee timer is active.
-        if (playerToFleeFrom != null)
-        {
-            Vector3 fleeDirection = transform.position - playerToFleeFrom.position;
+        nextAllowedAggroTime =
+            Time.time + postCaptureCooldown;
 
-            if (fleeDirection.magnitude < 0.1f)
-            {
-                fleeDirection = -transform.forward;
-            }
+        navMeshAgent.isStopped = false;
 
-            fleeDirection.Normalize();
-
-            Vector3 fleeTarget = transform.position + fleeDirection * fleeDistance;
-
-            UnityEngine.AI.NavMeshHit navHit;
-
-            if (UnityEngine.AI.NavMesh.SamplePosition(fleeTarget, out navHit, fleeDistance, UnityEngine.AI.NavMesh.AllAreas))
-            {
-                navMeshAgent.SetDestination(navHit.position);
-            }
-        }
-
-        if (fleeTimer.IsFinished())
-        {
-            playerToFleeFrom = null;
-            SetState(idleState);
-        }
+        // Make the zombie run away after the player escapes.
+        playerToFleeFrom = player;
+        SetState(NPC_EnemyState.FLEE);
     }
 
     void StateEnd_Flee()

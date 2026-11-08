@@ -149,4 +149,24 @@ public class PlayerHealth : MonoBehaviour
 
         playerRenderer.material.color = originalColor;
     }
+
+    public void ForceDeath()
+    {
+        if (isDead)
+            return;
+
+        isDead = true;
+        currentHealth = 0;
+
+        UpdateHealthUI();
+
+        if (playerBehavior != null)
+        {
+            playerBehavior.DiePlayer();
+        }
+        else
+        {
+            gameObject.SetActive(false);
+        }
+    }
 }

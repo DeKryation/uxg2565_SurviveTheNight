@@ -2,27 +2,18 @@ using UnityEngine;
 
 public class ExplosiveSpawner : MonoBehaviour
 {
-    [Header("Pickup")]
+    [Header("Explosive Prefab")]
     public GameObject explosivePrefab;
 
     [Header("Spawn Points")]
-    public Transform[] spawnPoints = new Transform[3];
-
-    [Header("Settings")]
-    public bool spawnOnStart = true;
-    public bool onlySpawnOne = true;
-
-    private GameObject currentExplosive;
+    public Transform[] spawnPoints;
 
     void Start()
     {
-        if (spawnOnStart)
-        {
-            SpawnExplosive();
-        }
+        SpawnAllExplosives();
     }
 
-    public void SpawnExplosive()
+    void SpawnAllExplosives()
     {
         if (explosivePrefab == null)
         {
@@ -30,61 +21,16 @@ public class ExplosiveSpawner : MonoBehaviour
             return;
         }
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
+        foreach (Transform spawnPoint in spawnPoints)
         {
-            Debug.LogWarning("ExplosiveSpawner: No spawn points assigned.");
-            return;
+            if (spawnPoint == null)
+                continue;
+
+            Instantiate(
+                explosivePrefab,
+                spawnPoint.position,
+                spawnPoint.rotation
+            );
         }
-
-        if (onlySpawnOne && currentExplosive != null)
-        {
-            return;
-        }
-
-        Transform chosenSpawnPoint = GetRandomSpawnPoint();
-
-        if (chosenSpawnPoint == null)
-        {
-            Debug.LogWarning("ExplosiveSpawner: Chosen spawn point is empty.");
-            return;
-        }
-
-        currentExplosive = Instantiate(
-            explosivePrefab,
-            chosenSpawnPoint.position,
-            chosenSpawnPoint.rotation
-        );
-    }
-
-    Transform GetRandomSpawnPoint()
-    {
-        int validCount = 0;
-
-        for (int i = 0; i < spawnPoints.Length; i++)
-        {
-            if (spawnPoints[i] != null)
-            {
-                validCount++;
-            }
-        }
-
-        if (validCount == 0)
-        {
-            return null;
-        }
-
-        Transform[] validSpawnPoints = new Transform[validCount];
-        int index = 0;
-
-        for (int i = 0; i < spawnPoints.Length; i++)
-        {
-            if (spawnPoints[i] != null)
-            {
-                validSpawnPoints[index] = spawnPoints[i];
-                index++;
-            }
-        }
-
-        return validSpawnPoints[Random.Range(0, validSpawnPoints.Length)];
     }
 }
