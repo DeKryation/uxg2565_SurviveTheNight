@@ -15,7 +15,7 @@ How To Run the Game:
 Recommended Audio Settings:
 
 For the optimal horror experience
-- Wear stereo headphones / earphones to accurately detect directional audio panning (Enemy positioning).
+- Wear stereo headphones / earphones to accurately detect directional audio panning (Enemy positioning) and having the best audio game experience.
 - There is Audio Settings in the Game settings for players to adjust to their preferred gaming experience.
 
 
