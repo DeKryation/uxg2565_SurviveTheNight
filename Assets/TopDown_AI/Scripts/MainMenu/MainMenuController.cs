@@ -24,6 +24,7 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
+        PlayerHealth.ResetSavedHealth();
         SceneManager.LoadScene(gameplaySceneName);
     }
 

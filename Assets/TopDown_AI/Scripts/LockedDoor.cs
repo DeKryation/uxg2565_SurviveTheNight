@@ -13,6 +13,9 @@ public class LockedDoor : MonoBehaviour
     [Header("Player Interaction")]
     public float interactionDistance = 2.5f;
     public KeyCode interactionKey = KeyCode.E;
+    [Tooltip("Optional: the solid collider on the door mesh. Distance is measured to its closest point, not the hinge.")]
+    public Collider doorCollider;
+    public bool debugInteraction = false;
 
     [Header("Key Requirement")]
     public int keysRequired = 1;
@@ -34,8 +37,21 @@ public class LockedDoor : MonoBehaviour
 
     private bool isOpen;
     private Transform player;
+    private PlayerBehavior currentPlayerBehavior;
     private KeyInventory keyInventory;
     private AudioSource audioSource;
+
+    [Header("Special Door Unlock SFX")]
+    public AudioClip insufficientExplosivesSFX;
+
+    [Range(0f, 1f)]
+    public float insufficientExplosivesVolume = 1f;
+
+    [Header("Explosive Requirement")]
+    public int explosivesRequired = 4;
+
+    // Prevent repeated special SFX after the first unlock.
+    private bool hasPlayedUnlockSFX = false;
 
     void Start()
     {
@@ -52,16 +68,7 @@ public class LockedDoor : MonoBehaviour
         doorVisual.localRotation =
             isOpen ? openRotation : closedRotation;
 
-        GameObject playerObject =
-            GameObject.FindGameObjectWithTag("Player");
-
-        if (playerObject != null)
-        {
-            player = playerObject.transform;
-
-            keyInventory =
-                playerObject.GetComponent<KeyInventory>();
-        }
+        RefreshPlayerReference();
 
         audioSource = GetComponent<AudioSource>();
 
@@ -85,35 +92,80 @@ public class LockedDoor : MonoBehaviour
         RotateDoor();
     }
 
-    void HandlePlayerInteraction()
+    // Resolve the actual active player controller, not merely any GameObject tagged Player.
+    // This also ignores leftover disabled player controllers from the death sequence.
+    void RefreshPlayerReference()
     {
-        if (player == null)
-            return;
-
-        float distance = Vector3.Distance(
-            player.position,
-            transform.position
+        PlayerBehavior[] controllers = FindObjectsByType<PlayerBehavior>(
+            FindObjectsSortMode.None
         );
 
-        if (distance > interactionDistance)
-            return;
+        PlayerBehavior best = null;
+        float bestDistance = float.PositiveInfinity;
 
+        foreach (PlayerBehavior controller in controllers)
+        {
+            if (controller == null || !controller.isActiveAndEnabled)
+                continue;
+
+            // Only controllers in the same loaded scene as this door.
+            if (controller.gameObject.scene != gameObject.scene)
+                continue;
+
+            float dist = Vector3.SqrMagnitude(controller.transform.position - transform.position);
+            if (dist < bestDistance)
+            {
+                best = controller;
+                bestDistance = dist;
+            }
+        }
+
+        currentPlayerBehavior = best;
+        player = best != null ? best.transform : null;
+        keyInventory = best != null ? best.GetComponent<KeyInventory>() : null;
+    }
+
+    float GetInteractionDistance()
+    {
+        if (player == null) return float.PositiveInfinity;
+        Vector3 point = doorCollider != null
+            ? doorCollider.ClosestPoint(player.position)
+            : transform.position;
+        // Ground-plane range, for the game's top-down movement.
+        Vector3 diff = player.position - point;
+        diff.y = 0f;
+        return diff.magnitude;
+    }
+
+    void HandlePlayerInteraction()
+    {
         if (!Input.GetKeyDown(interactionKey))
             return;
 
-        // Prevent opening doors during QTE.
-        PlayerGrabQTE qte =
-            player.GetComponent<PlayerGrabQTE>();
+        RefreshPlayerReference();
 
+        float distance = GetInteractionDistance();
+
+        if (debugInteraction)
+        {
+            Debug.Log("[DOOR DEBUG] PlayerController=" +
+                (player != null ? player.name : "MISSING") +
+                " | PlayerPos=" + (player != null ? player.position.ToString() : "N/A") +
+                " | DoorPos=" + transform.position +
+                " | Distance=" + distance.ToString("F2") +
+                " | Range=" + interactionDistance, this);
+        }
+
+        if (player == null || distance > interactionDistance)
+            return;
+
+        PlayerGrabQTE qte = player.GetComponent<PlayerGrabQTE>();
         if (qte != null && qte.IsActive)
             return;
 
-        // Door is locked without the required key.
-        if (keyInventory == null ||
-            keyInventory.keysCollected < keysRequired)
+        if (keyInventory == null || keyInventory.keysCollected < keysRequired)
         {
             PlayDoorSound(doorFailedSFX, failedVolume);
-
             Debug.Log("Door is locked. A key is required!");
             return;
         }
@@ -148,7 +200,15 @@ public class LockedDoor : MonoBehaviour
 
         isOpen = true;
 
+        // Play the normal door opening sound.
         PlayDoorSound(doorOpenSFX, openVolume);
+
+        // Play the special SFX on the first successful unlock.
+        if (!hasPlayedUnlockSFX)
+        {
+            CheckExplosivesAndPlaySFX();
+            hasPlayedUnlockSFX = true;
+        }
     }
 
     public void CloseDoor()
@@ -168,4 +228,29 @@ public class LockedDoor : MonoBehaviour
             audioSource.PlayOneShot(clip, clipVolume);
         }
     }
+    void CheckExplosivesAndPlaySFX()
+    {
+        GameObject currentPlayer =
+            GameObject.FindGameObjectWithTag("Player");
+
+        if (currentPlayer == null)
+            return;
+
+        ExplosiveInventory inventory =
+            currentPlayer.GetComponent<ExplosiveInventory>();
+
+        if (inventory == null)
+            return;
+
+        // Only play when fewer than 4 explosives are collected.
+        if (inventory.explosivesCollected < explosivesRequired)
+        {
+            PlayDoorSound(
+                insufficientExplosivesSFX,
+                insufficientExplosivesVolume
+            );
+        }
+    }
+
+
 }

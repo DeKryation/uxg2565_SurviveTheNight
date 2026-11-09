@@ -22,8 +22,13 @@ public class KeyCollectible : MonoBehaviour
         {
             collected = true;
 
+            // Add the key to the player's inventory.
             inventory.AddKey(keyAmount);
 
+            // Play the key pickup sound.
+            SoundManager.PlayPickupKey();
+
+            // Optional pickup VFX.
             if (pickupEffect != null)
             {
                 Instantiate(
@@ -33,6 +38,7 @@ public class KeyCollectible : MonoBehaviour
                 );
             }
 
+            // Remove the collected key.
             Destroy(gameObject);
         }
     }

@@ -11,6 +11,9 @@ public class InteractiveDoor : MonoBehaviour
     [Header("Player Interaction")]
     public float interactionDistance = 2.5f;
     public KeyCode interactionKey = KeyCode.E;
+    [Tooltip("Optional: the solid collider on the door mesh. Distance is measured to its closest point, not the hinge.")]
+    public Collider doorCollider;
+    public bool debugInteraction = false;
 
     [Header("Enemy Interaction")]
     public bool enemyCanOpen = true;
@@ -29,6 +32,7 @@ public class InteractiveDoor : MonoBehaviour
     private bool isOpen;
 
     private Transform player;
+    private PlayerBehavior currentPlayerBehavior;
     private Transform enemy;
     private AudioSource audioSource;
 
@@ -59,11 +63,7 @@ public class InteractiveDoor : MonoBehaviour
         audioSource.minDistance = minDistance;
         audioSource.maxDistance = maxDistance;
 
-        GameObject playerObject =
-            GameObject.FindGameObjectWithTag("Player");
-
-        if (playerObject != null)
-            player = playerObject.transform;
+        RefreshPlayerReference();
 
         GameObject enemyObject =
             GameObject.FindGameObjectWithTag("Enemy");
@@ -82,25 +82,73 @@ public class InteractiveDoor : MonoBehaviour
         RotateDoor();
     }
 
-    void HandlePlayerInteraction()
+    // Resolve the actual active player controller, not merely any GameObject tagged Player.
+    // This also ignores leftover disabled player controllers from the death sequence.
+    void RefreshPlayerReference()
     {
-        if (player == null)
-            return;
-
-        float distance = Vector3.Distance(
-            player.position,
-            transform.position
+        PlayerBehavior[] controllers = FindObjectsByType<PlayerBehavior>(
+            FindObjectsSortMode.None
         );
 
-        if (distance > interactionDistance)
-            return;
+        PlayerBehavior best = null;
+        float bestDistance = float.PositiveInfinity;
 
+        foreach (PlayerBehavior controller in controllers)
+        {
+            if (controller == null || !controller.isActiveAndEnabled)
+                continue;
+
+            // Only controllers in the same loaded scene as this door.
+            if (controller.gameObject.scene != gameObject.scene)
+                continue;
+
+            float dist = Vector3.SqrMagnitude(controller.transform.position - transform.position);
+            if (dist < bestDistance)
+            {
+                best = controller;
+                bestDistance = dist;
+            }
+        }
+
+        currentPlayerBehavior = best;
+        player = best != null ? best.transform : null;
+    }
+
+    float GetInteractionDistance()
+    {
+        if (player == null) return float.PositiveInfinity;
+        Vector3 point = doorCollider != null
+            ? doorCollider.ClosestPoint(player.position)
+            : transform.position;
+        // Ground-plane range, for the game's top-down movement.
+        Vector3 diff = player.position - point;
+        diff.y = 0f;
+        return diff.magnitude;
+    }
+
+    void HandlePlayerInteraction()
+    {
         if (!Input.GetKeyDown(interactionKey))
             return;
 
-        PlayerGrabQTE qte =
-            player.GetComponent<PlayerGrabQTE>();
+        RefreshPlayerReference();
 
+        float distance = GetInteractionDistance();
+
+        if (debugInteraction)
+        {
+            Debug.Log("[DOOR DEBUG] PlayerController=" +
+                (player != null ? player.name : "MISSING") +
+                " | PlayerPos=" + (player != null ? player.position.ToString() : "N/A") +
+                " | DoorPos=" + transform.position +
+                " | Distance=" + distance.ToString("F2") +
+                " | Range=" + interactionDistance, this);
+        }
+
+        if (player == null || distance > interactionDistance)
+            return;
+
+        PlayerGrabQTE qte = player.GetComponent<PlayerGrabQTE>();
         if (qte != null && qte.IsActive)
             return;
 

@@ -125,6 +125,7 @@ public class PlayerGrabQTE : MonoBehaviour
 
         // Zombie holds the player.
         enemy.BeginCapture();
+        SoundManager.PlayRandomPlayerQTEShout();
 
         // Show QTE immediately.
         qtePanel.SetActive(true);
@@ -173,6 +174,7 @@ public class PlayerGrabQTE : MonoBehaviour
 
         if (successful)
         {
+            SoundManager.PlayQTESuccess();
             successes++;
 
             if (successes >= successesNeeded)
@@ -185,6 +187,7 @@ public class PlayerGrabQTE : MonoBehaviour
         }
         else
         {
+            SoundManager.PlayQTEMiss();
             RegisterMiss();
         }
     }
@@ -307,6 +310,19 @@ public class PlayerGrabQTE : MonoBehaviour
                 TriggerQTEDeath();
             }
         }
+    }
+    public void ResetQTEState()
+    {
+        qteActive = false;
+        waitingForDeath = false;
+
+        capturingEnemy = null;
+
+        successes = 0;
+        misses = 0;
+
+        if (qtePanel != null)
+            qtePanel.SetActive(false);
     }
 
     void TriggerQTEDeath()

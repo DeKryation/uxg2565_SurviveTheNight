@@ -27,6 +27,7 @@ public class ExplosiveCollectible : MonoBehaviour
                     Instantiate(pickupEffect, transform.position, transform.rotation);
                 }
                 SoundManager.PlayPickupExplosive();
+                SoundManager.PlayMonsterTriggeredDelayed();
                 Destroy(gameObject);
             }
         }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 public class GameManager : MonoBehaviour
@@ -27,10 +28,19 @@ public class GameManager : MonoBehaviour
     {
         if (gameOver && Input.GetKeyDown(KeyCode.R))
         {
-            Application.LoadLevel(Application.loadedLevel);
+            PlayerHealth.ResetSavedHealth();
+            RestartAfterDeath();
         }
 
     }
+    public void RestartAfterDeath()
+    {
+        // The death flow may have disabled gameplay or paused the scene.
+        Time.timeScale = 1f;
+        gameOver = false;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
     void UpdateScoreText()
     {
         if (scoreText != null) scoreText.text = currentScore.ToString();
